@@ -1,11 +1,20 @@
-    Found existing installation: pandas 2.3.2
-    Uninstalling pandas-2.3.2:
-      Successfully uninstalled pandas-2.3.2
-ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
-pandas-ta 0.4.71b0 requires numpy>=2.2.6, but you have numpy 1.26.0 which is incompatible.
-pandas-ta 0.4.71b0 requires pandas>=2.3.2, but you have pandas 2.2.2 which is incompatible.
-thinc 8.3.6 requires numpy<3.0.0,>=2.0.0, but you have numpy 1.26.0 which is incompatible.
-opencv-python 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 1.26.0 which is incompatible.
-opencv-contrib-python 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 1.26.0 which is incompatible.
-opencv-python-headless 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 1.26.0 which is incompatible.
-Successfully installed numpy-1.26.0 pandas-2.2.2
+# Read the requirements.txt file
+with open('requirements.txt', 'r') as f:
+    lines = f.readlines()
+
+# Remove version specifiers for numpy and pandas-ta
+new_lines = []
+for line in lines:
+    if line.strip().startswith('numpy') and '==' in line:
+        new_lines.append('numpy\n')
+    elif line.strip().startswith('pandas-ta') and '==' in line:
+        new_lines.append('pandas-ta\n')
+    else:
+        new_lines.append(line)
+
+# Write the modified requirements.txt file
+with open('requirements.txt', 'w') as f:
+    f.writelines(new_lines)
+
+# Install packages again with the modified requirements.txt
+!pip install -r requirements.txtthe
