@@ -127,33 +127,54 @@ def create_technical_indicators(df):
     
     return df
 
-def generate_targets(df, profit_threshold=0.002, loss_threshold=-0.002):
-    """Generate binary classification targets for 5-minute intraday trading"""
-    
-    print(f"Generating targets (profit: {profit_threshold*100:.1f}%, loss: {loss_threshold*100:.1f}%)...")
-    
-    # Calculate next period return
-    df['future_return'] = df['close'].shift(-1) / df['close'] - 1
-    
-    # Generate binary targets
-    df['target'] = 0  # Default: Hold
-    df.loc[df['future_return'] >= profit_threshold, 'target'] = 1  # Buy signal
-    df.loc[df['future_return'] <= loss_threshold, 'target'] = -1   # Sell signal
-    
-    # For binary classification (0/1)
-    df['target_binary'] = (df['target'] == 1).astype(int)
-    
-    # Remove rows with undefined targets (last row)
-    df = df.dropna(subset=['future_return'])
-    
+def generate_targets_triple_barrier(df, atr_multiplier_profit=1.5, atr_multiplier_loss=1.5, time_horizon_candles=10):
+    """
+    Generate binary classification targets using the Triple Barrier Method.
+    - 1 (Buy): Price hits the upper barrier (take profit) first.
+    - 0 (Hold): Price hits the lower barrier (stop loss) or time barrier first.
+    """
+    print(f"Generating targets with Triple Barrier Method...")
+    print(f"Params: TP multiplier={atr_multiplier_profit}, SL multiplier={atr_multiplier_loss}, Horizon={time_horizon_candles} candles")
+
+    n = len(df)
+    targets = np.zeros(n)  # Default to 0 (Hold/Loss)
+
+    for i in range(n - time_horizon_candles):
+        entry_price = df['close'].iloc[i]
+        atr = df['ATR'].iloc[i]
+
+        # Define barriers
+        take_profit_level = entry_price + (atr * atr_multiplier_profit)
+        stop_loss_level = entry_price - (atr * atr_multiplier_loss)
+
+        # Look into the future path
+        future_path = df.iloc[i+1 : i+1+time_horizon_candles]
+
+        # Check when barriers are hit
+        hit_tp_mask = future_path['high'] >= take_profit_level
+        hit_sl_mask = future_path['low'] <= stop_loss_level
+
+        tp_hit_time = future_path.index[hit_tp_mask].min() if hit_tp_mask.any() else pd.NaT
+        sl_hit_time = future_path.index[hit_sl_mask].min() if hit_sl_mask.any() else pd.NaT
+
+        # Determine which barrier was hit first
+        if pd.notna(tp_hit_time) and pd.notna(sl_hit_time):
+            if tp_hit_time <= sl_hit_time:
+                targets[i] = 1  # Profit hit first
+        elif pd.notna(tp_hit_time):
+            targets[i] = 1  # Only profit was hit
+
+    df['target_binary'] = targets
+    df = df.iloc[:-time_horizon_candles].copy()  # Use .copy() to avoid SettingWithCopyWarning
+
     # Target distribution
-    target_dist = df['target'].value_counts().sort_index()
+    target_dist = df['target_binary'].value_counts().sort_index()
     print(f"Target distribution:")
     for target_val, count in target_dist.items():
         pct = count / len(df) * 100
-        label = {-1: 'Sell', 0: 'Hold', 1: 'Buy'}[target_val]
-        print(f"   {label} ({target_val}): {count:,} samples ({pct:.1f}%)")
-    
+        label = {0: 'Hold/Loss', 1: 'Buy'}[int(target_val)]
+        print(f"   {label} ({int(target_val)}): {count:,} samples ({pct:.1f}%)")
+
     return df
 
 def prepare_training_data(train_df, test_df):
@@ -173,7 +194,13 @@ def prepare_training_data(train_df, test_df):
     print(f"Removed {initial_rows_test - final_rows_test} rows with NaN values from testing data")
     
     # Define feature columns (exclude OHLCV and target columns)
-    exclude_cols = ['open', 'high', 'low', 'close', 'volume', 'target', 'target_binary', 'future_return']
+    exclude_cols = ['open', 'high', 'low', 'close', 'volume', 'target_binary']
+    # Remove original target columns if they exist from previous runs
+    if 'target' in train_df.columns:
+        exclude_cols.append('target')
+    if 'future_return' in train_df.columns:
+        exclude_cols.append('future_return')
+        
     feature_cols = [col for col in train_df.columns if col not in exclude_cols]
     
     print(f"Selected {len(feature_cols)} features: {feature_cols}")
@@ -340,9 +367,9 @@ def main():
         train_df = create_technical_indicators(train_df)
         test_df = create_technical_indicators(test_df)
         
-        # Step 3: Generate targets
-        train_df = generate_targets(train_df, profit_threshold=0.002, loss_threshold=-0.002)
-        test_df = generate_targets(test_df, profit_threshold=0.002, loss_threshold=-0.002)
+        # Step 3: Generate targets using the Triple Barrier Method
+        train_df = generate_targets_triple_barrier(train_df)
+        test_df = generate_targets_triple_barrier(test_df)
         
         # Step 4: Prepare training data
         X_train, y_train, X_test, y_test, feature_cols = prepare_training_data(train_df, test_df)
