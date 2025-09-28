@@ -198,11 +198,10 @@ def train_xgboost_model(X_train, y_train, X_test, y_test, feature_cols):
         return None, None
 
     # Calculate scale_pos_weight to handle class imbalance
-    # Formula: count(negative_class) / count(positive_class)
     scale_pos_weight = y_train.value_counts()[0] / y_train.value_counts()[1]
     print(f"Calculated scale_pos_weight: {scale_pos_weight:.2f}")
 
-    # Create a validation set for early stopping from the original training data
+    # Create a validation set for early stopping
     X_train_es, X_val_es, y_train_es, y_val_es = train_test_split(
         X_train, y_train, test_size=0.2, random_state=42, stratify=y_train
     )
@@ -217,15 +216,16 @@ def train_xgboost_model(X_train, y_train, X_test, y_test, feature_cols):
         'reg_lambda': [1, 1.5, 2, 3]
     }
 
-    # Initialize the XGBoost classifier with scale_pos_weight and high n_estimators
+    # Initialize the XGBoost classifier with early stopping parameters
     model = xgb.XGBClassifier(
         objective='binary:logistic',
         random_state=42,
         eval_metric='logloss',
         tree_method='hist',
         device='cuda',
-        scale_pos_weight=scale_pos_weight,  # Handle imbalance
-        n_estimators=1000  # Set a high number, early stopping will find the optimum
+        scale_pos_weight=scale_pos_weight,
+        n_estimators=1000,
+        early_stopping_rounds=50  # Add early stopping here
     )
 
     # Initialize TimeSeriesSplit for cross-validation
@@ -243,10 +243,9 @@ def train_xgboost_model(X_train, y_train, X_test, y_test, feature_cols):
         random_state=42
     )
     
-    # Fit RandomizedSearchCV with early stopping
+    # Fit RandomizedSearchCV, passing the eval_set as a fit parameter
     random_search.fit(
         X_train_es, y_train_es,
-        early_stopping_rounds=50,
         eval_set=[(X_val_es, y_val_es)],
         verbose=False
     )
