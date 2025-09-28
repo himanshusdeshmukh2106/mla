@@ -367,9 +367,13 @@ def main():
         train_df = create_technical_indicators(train_df)
         test_df = create_technical_indicators(test_df)
         
-        # Step 3: Generate targets using the Triple Barrier Method
-        train_df = generate_targets_triple_barrier(train_df)
-        test_df = generate_targets_triple_barrier(test_df)
+        # Step 3: Generate targets using the Triple Barrier Method with a 2:1 Reward/Risk ratio
+        train_df = generate_targets_triple_barrier(
+            train_df, atr_multiplier_profit=2.0, atr_multiplier_loss=1.0, time_horizon_candles=8
+        )
+        test_df = generate_targets_triple_barrier(
+            test_df, atr_multiplier_profit=2.0, atr_multiplier_loss=1.0, time_horizon_candles=8
+        )
         
         # Step 4: Prepare training data
         X_train, y_train, X_test, y_test, feature_cols = prepare_training_data(train_df, test_df)
