@@ -217,7 +217,7 @@ def train_xgboost_model(X_train, y_train, X_test, y_test, feature_cols):
     }
 
     # Initialize the XGBoost classifier
-    model = xgb.XGBClassifier(objective='binary:logistic', random_state=42, eval_metric='logloss')
+    model = xgb.XGBClassifier(objective='binary:logistic', random_state=42, eval_metric='logloss', tree_method='gpu_hist')
 
     # Initialize TimeSeriesSplit
     tscv = TimeSeriesSplit(n_splits=5)
