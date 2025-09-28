@@ -100,8 +100,6 @@ def create_technical_indicators(df):
     df['Price_SMA_20_Ratio'] = df['close'] / df['SMA_20']
     df['EMA_Cross'] = (df['EMA_12'] > df['EMA_26']).astype(int)
 
-    # --- New Features ---
-
     # Stochastic Oscillator (14 periods)
     low_14 = df['low'].rolling(window=14).min()
     high_14 = df['high'].rolling(window=14).max()
@@ -111,12 +109,19 @@ def create_technical_indicators(df):
     # Williams %R (14 periods)
     df['Williams_R'] = -100 * ((high_14 - df['close']) / (high_14 - low_14))
 
-    # Time-based features
-    df['Time_of_Day'] = df.index.hour * 60 + df.index.minute
-    df['Day_of_Week'] = df.index.dayofweek # Monday=0, Sunday=6
+    # --- ADVANCED FEATURES ---
 
-    # Interaction feature
+    # 1. Volatility-based feature
+    df['ATR_Percentage'] = (df['ATR'] / df['close']) * 100
+
+    # 2. Time-based features
+    df['Day_of_Week'] = df.index.dayofweek # Monday=0, Sunday=6
+    # Market open in India is 9:15 AM. Total minutes from midnight = 9*60 + 15 = 555
+    df['Time_Since_Open'] = (df.index.hour * 60 + df.index.minute) - 555
+    
+    # 3. Interaction features
     df['RSI_Volume_Ratio'] = df['RSI'] * df['Volume_Ratio']
+    df['RSI_x_Volatility'] = df['RSI'] * df['Volatility_20']
     
     print(f"Created technical indicators, including advanced and time-based features")
     

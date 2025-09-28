@@ -1,52 +1,40 @@
-[CV] END colsample_bytree=0.7, learning_rate=0.1, max_depth=9, reg_alpha=0, reg_lambda=1, subsample=0.9; total time=   0.0s
-[CV] END colsample_bytree=0.7, learning_rate=0.1, max_depth=9, reg_alpha=0, reg_lambda=1, subsample=0.9; total time=   0.0s
-[CV] END colsample_bytree=0.7, learning_rate=0.1, max_depth=9, reg_alpha=0, reg_lambda=1, subsample=0.9; total time=   0.0s
-[CV] END colsample_bytree=0.7, learning_rate=0.1, max_depth=9, reg_alpha=0, reg_lambda=1, subsample=0.9; total time=   0.0s
-Training failed: 
-All the 500 fits failed.
-It is very likely that your model is misconfigured.
-You can try to debug the error by setting error_score='raise'.
+[CV] END colsample_bytree=0.7, learning_rate=0.1, max_depth=9, reg_alpha=0, reg_lambda=1, subsample=0.9; total time=   0.7s
+[CV] END colsample_bytree=0.7, learning_rate=0.1, max_depth=9, reg_alpha=0, reg_lambda=1, subsample=0.9; total time=   0.7s
+Best parameters found: {'subsample': 0.9, 'reg_lambda': 3, 'reg_alpha': 0, 'max_depth': 3, 'learning_rate': 0.05, 'colsample_bytree': 0.7}
+Model training completed
+Test Accuracy: 0.9136
 
-Below are more details about the failures:
---------------------------------------------------------------------------------
-500 fits failed with the following error:
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/model_selection/_validation.py", line 866, in _fit_and_score
-    estimator.fit(X_train, y_train, **fit_params)
-  File "/usr/local/lib/python3.12/dist-packages/xgboost/core.py", line 729, in inner_f
-    return func(**kwargs)
-           ^^^^^^^^^^^^^^
-TypeError: XGBClassifier.fit() got an unexpected keyword argument 'early_stopping_rounds'
+Classification Report:
+              precision    recall  f1-score   support
 
-Traceback (most recent call last):
-  File "/content/mla/train_reliance_model.py", line 347, in main
-    model, feature_importance = train_xgboost_model(X_train, y_train, X_test, y_test, feature_cols)
-                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/content/mla/train_reliance_model.py", line 247, in train_xgboost_model
-    random_search.fit(
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/base.py", line 1389, in wrapper
-    return fit_method(estimator, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/model_selection/_search.py", line 1024, in fit
-    self._run_search(evaluate_candidates)
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/model_selection/_search.py", line 1951, in _run_search
-    evaluate_candidates(
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/model_selection/_search.py", line 1001, in evaluate_candidates
-    _warn_or_raise_about_fit_failures(out, self.error_score)
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/model_selection/_validation.py", line 517, in _warn_or_raise_about_fit_failures
-    raise ValueError(all_fits_failed_message)
-ValueError: 
-All the 500 fits failed.
-It is very likely that your model is misconfigured.
-You can try to debug the error by setting error_score='raise'.
+           0       0.95      0.95      0.95      4298
+           1       0.21      0.21      0.21       248
 
-Below are more details about the failures:
---------------------------------------------------------------------------------
-500 fits failed with the following error:
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.12/dist-packages/sklearn/model_selection/_validation.py", line 866, in _fit_and_score
-    estimator.fit(X_train, y_train, **fit_params)
-  File "/usr/local/lib/python3.12/dist-packages/xgboost/core.py", line 729, in inner_f
-    return func(**kwargs)
-           ^^^^^^^^^^^^^^
-TypeError: XGBClassifier.fit() got an unexpected keyword argument 'early_stopping_rounds'
+    accuracy                           0.91      4546
+   macro avg       0.58      0.58      0.58      4546
+weighted avg       0.91      0.91      0.91      4546
+
+Confusion Matrix:
+[[4101  197]
+ [ 196   52]]
+
+Top 10 Most Important Features:
+ 1. Time_of_Day          0.0791
+ 2. ATR                  0.0687
+ 3. Volume_SMA_20        0.0611
+ 4. Volume_Ratio         0.0573
+ 5. Volatility_20        0.0397
+ 6. RSI_Volume_Ratio     0.0388
+ 7. EMA_26               0.0382
+ 8. Price_SMA_20_Ratio   0.0372
+ 9. BB_Upper             0.0363
+10. SMA_20               0.0359
+Saving model and results...
+Model saved to: models/reliance_5min_xgboost.pkl
+Features saved to: models/reliance_5min_features.txt
+Feature importance saved to: models/reliance_5min_feature_importance.csv
+
+============================================================
+TRAINING COMPLETED SUCCESSFULLY!
+Your Reliance 5-min intraday model is ready!
+============================================================
