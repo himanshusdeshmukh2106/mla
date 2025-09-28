@@ -1,0 +1,8 @@
+end_date: '2024-01-01'
+start_date: '2023-01-01'
+symbols:
+- AAPL
+timeframe: 1min
+validation:
+  max_missing_pct: 0.05
+  outlier_threshold: 3.0

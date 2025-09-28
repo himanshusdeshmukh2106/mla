@@ -1,0 +1,6 @@
+commission: 0.001
+initial_cash: 10000
+margin: 1.0
+slippage: 0.0005
+trade_on_close: true
+trade_on_open: false

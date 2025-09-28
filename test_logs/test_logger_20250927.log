@@ -1,0 +1,6 @@
+2025-09-27 19:43:44,389 - test_logger - INFO - info:70 - Test info message
+2025-09-27 19:43:44,389 - test_logger - WARNING - warning:74 - Test warning message
+2025-09-27 19:43:44,389 - test_logger - ERROR - error:81 - Test error message
+2025-09-27 19:51:54,586 - test_logger - INFO - info:70 - Test info message
+2025-09-27 19:51:54,586 - test_logger - WARNING - warning:74 - Test warning message
+2025-09-27 19:51:54,586 - test_logger - ERROR - error:81 - Test error message

@@ -1,0 +1,194 @@
+2025-09-27 18:40:10,113 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 18:40:10,119 - src.features.engineer - INFO - info:70 - Creating features for 2000 data points
+2025-09-27 18:40:10,143 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50], EMA periods [12, 26]
+2025-09-27 18:40:10,148 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 18:40:10,156 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 18:40:10,162 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 18:40:10,164 - src.features.engineer - INFO - info:70 - Features created. Rows: 2000 -> 1941 (removed 59 NaN rows)
+2025-09-27 18:41:38,515 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 18:41:38,515 - src.features.engineer - INFO - info:70 - Creating features for 2000 data points
+2025-09-27 18:41:38,529 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50], EMA periods [12, 26]
+2025-09-27 18:41:38,535 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 18:41:38,537 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 18:41:38,546 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 18:41:38,549 - src.features.engineer - INFO - info:70 - Features created. Rows: 2000 -> 1941 (removed 59 NaN rows)
+2025-09-27 18:41:38,549 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 18:50:00,994 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 18:50:00,994 - src.features.engineer - INFO - info:70 - Creating features for 2000 data points
+2025-09-27 18:50:01,007 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50], EMA periods [12, 26]
+2025-09-27 18:50:01,009 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 18:50:01,016 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 18:50:01,018 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 18:50:01,021 - src.features.engineer - INFO - info:70 - Features created. Rows: 2000 -> 1941 (removed 59 NaN rows)
+2025-09-27 18:50:01,021 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 18:50:01,022 - src.features.engineer - INFO - info:70 - Generating targets for 1941 data points
+2025-09-27 18:50:01,026 - src.features.engineer - INFO - info:70 - Target generation complete. Rows: 1941 -> 1941 (removed 0 undefined targets)
+2025-09-27 18:51:25,470 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 18:51:25,471 - src.features.engineer - INFO - info:70 - Creating features for 2000 data points
+2025-09-27 18:51:25,484 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50], EMA periods [12, 26]
+2025-09-27 18:51:25,488 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 18:51:25,494 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 18:51:25,497 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 18:51:25,498 - src.features.engineer - INFO - info:70 - Features created. Rows: 2000 -> 1941 (removed 59 NaN rows)
+2025-09-27 18:51:25,498 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 18:51:25,500 - src.features.engineer - INFO - info:70 - Generating targets for 1941 data points
+2025-09-27 18:51:25,506 - src.features.engineer - INFO - info:70 - Target generation complete. Rows: 1941 -> 1941 (removed 0 undefined targets)
+2025-09-27 19:11:37,587 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:11:37,587 - src.features.engineer - INFO - info:70 - Creating features for 1000 data points
+2025-09-27 19:11:37,600 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50, 200], EMA periods [12, 26, 50]
+2025-09-27 19:11:37,605 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:11:37,612 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:11:37,615 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:11:37,616 - src.features.engineer - INFO - info:70 - Features created. Rows: 1000 -> 801 (removed 199 NaN rows)
+2025-09-27 19:12:07,558 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:12:07,559 - src.features.engineer - INFO - info:70 - Creating features for 1000 data points
+2025-09-27 19:12:07,569 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50, 200], EMA periods [12, 26, 50]
+2025-09-27 19:12:07,571 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:12:07,576 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:12:07,579 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:12:07,582 - src.features.engineer - INFO - info:70 - Features created. Rows: 1000 -> 801 (removed 199 NaN rows)
+2025-09-27 19:12:07,582 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 19:12:07,582 - src.features.engineer - INFO - info:70 - Generating targets for 801 data points
+2025-09-27 19:12:07,587 - src.features.engineer - INFO - info:70 - Target generation complete. Rows: 801 -> 801 (removed 0 undefined targets)
+2025-09-27 19:13:13,120 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:13:13,121 - src.features.engineer - INFO - info:70 - Creating features for 1000 data points
+2025-09-27 19:13:13,136 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50, 200], EMA periods [12, 26, 50]
+2025-09-27 19:13:13,139 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:13:13,146 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:13:13,152 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:13:13,153 - src.features.engineer - INFO - info:70 - Features created. Rows: 1000 -> 801 (removed 199 NaN rows)
+2025-09-27 19:13:13,153 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 19:13:13,154 - src.features.engineer - INFO - info:70 - Generating targets for 801 data points
+2025-09-27 19:13:13,160 - src.features.engineer - INFO - info:70 - Target generation complete. Rows: 801 -> 801 (removed 0 undefined targets)
+2025-09-27 19:26:21,291 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:26:21,291 - src.features.engineer - INFO - info:70 - Creating features for 50 data points
+2025-09-27 19:26:21,306 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20], EMA periods [12]
+2025-09-27 19:26:21,308 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:26:21,313 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:26:21,314 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:26:21,316 - src.features.engineer - INFO - info:70 - Features created. Rows: 50 -> 0 (removed 50 NaN rows)
+2025-09-27 19:26:21,641 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:26:21,641 - src.features.engineer - INFO - info:70 - Creating features for 50 data points
+2025-09-27 19:26:21,641 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20], EMA periods [12]
+2025-09-27 19:26:21,649 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:26:21,653 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:26:21,655 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:26:21,656 - src.features.engineer - INFO - info:70 - Features created. Rows: 50 -> 0 (removed 50 NaN rows)
+2025-09-27 19:26:21,686 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:26:21,687 - src.features.engineer - INFO - info:70 - Creating features for 50 data points
+2025-09-27 19:26:21,688 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20], EMA periods [12]
+2025-09-27 19:26:21,692 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:26:21,695 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:26:21,697 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:26:21,697 - src.features.engineer - INFO - info:70 - Features created. Rows: 50 -> 0 (removed 50 NaN rows)
+2025-09-27 19:26:21,725 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:26:21,725 - src.features.engineer - INFO - info:70 - Creating features for 50 data points
+2025-09-27 19:26:21,725 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20], EMA periods [12]
+2025-09-27 19:26:21,733 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:26:21,737 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:26:21,738 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:26:21,738 - src.features.engineer - INFO - info:70 - Features created. Rows: 50 -> 0 (removed 50 NaN rows)
+2025-09-27 19:31:01,329 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:31:01,329 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:31:01,342 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:31:01,344 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:31:01,348 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:31:01,350 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:31:01,350 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:31:01,573 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:31:01,573 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:31:01,589 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:31:01,589 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:31:01,589 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:31:01,589 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:31:01,589 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:31:01,607 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:31:01,608 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:31:01,610 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:31:01,613 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:31:01,616 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:31:01,620 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:31:01,620 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:31:01,623 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:31:01,625 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:31:01,627 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:31:01,630 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:31:01,637 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:31:01,639 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:31:01,640 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:32:27,592 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:32:27,592 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:32:27,610 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:32:27,610 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:32:27,610 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:32:27,610 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:32:27,610 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:32:27,621 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:32:27,638 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:32:27,639 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:32:27,641 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:32:27,644 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:32:27,644 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:32:27,650 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:32:27,651 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:32:27,654 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:32:27,654 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:32:27,655 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:32:27,658 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:32:27,661 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:32:27,661 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:32:27,661 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:34:18,226 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:34:18,228 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:34:18,239 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:34:18,241 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:34:18,246 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:34:18,248 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:34:18,249 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:34:18,252 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:34:18,253 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:34:18,253 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:34:18,253 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:34:18,263 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:34:18,265 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:34:18,266 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:34:18,268 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:34:18,269 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:34:18,269 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:34:18,274 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:34:18,278 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:34:18,278 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:34:18,278 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:34:18,278 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:34:18,286 - src.features.engineer - INFO - info:70 - Creating features for 100 data points
+2025-09-27 19:34:18,289 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [5], EMA periods [3]
+2025-09-27 19:34:18,291 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:34:18,295 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:34:18,297 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:34:18,298 - src.features.engineer - INFO - info:70 - Features created. Rows: 100 -> 41 (removed 59 NaN rows)
+2025-09-27 19:56:48,011 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:56:48,011 - src.features.engineer - INFO - info:70 - Creating features for 2000 data points
+2025-09-27 19:56:48,023 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50], EMA periods [12, 26]
+2025-09-27 19:56:48,025 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:56:48,026 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:56:48,032 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:56:48,033 - src.features.engineer - INFO - info:70 - Features created. Rows: 2000 -> 1941 (removed 59 NaN rows)
+2025-09-27 19:56:48,033 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 19:56:48,033 - src.features.engineer - INFO - info:70 - Generating targets for 1941 data points
+2025-09-27 19:56:48,035 - src.features.engineer - INFO - info:70 - Target generation complete. Rows: 1941 -> 1941 (removed 0 undefined targets)
+2025-09-27 19:58:38,275 - src.features.engineer - INFO - info:70 - FeatureEngineer initialized with config
+2025-09-27 19:58:38,276 - src.features.engineer - INFO - info:70 - Creating features for 2000 data points
+2025-09-27 19:58:38,285 - src.features.engineer - INFO - info:70 - Added trend indicators: SMA periods [20, 50], EMA periods [12, 26]
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - Added momentum indicators: RSI, MACD, Stochastic, ROC
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - Added volatility indicators: Bollinger Bands, ATR, Volatility Ratio
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - Added volume indicators: OBV, Volume SMA, Volume ROC, PVT
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - Features created. Rows: 2000 -> 1941 (removed 59 NaN rows)
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - TargetGenerator initialized with method: next_period_return, lookahead: 1, thresholds: profit=0.001, loss=-0.001
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - Generating targets for 1941 data points
+2025-09-27 19:58:38,286 - src.features.engineer - INFO - info:70 - Target generation complete. Rows: 1941 -> 1941 (removed 0 undefined targets)

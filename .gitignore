@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+env/
+
+# Logs
+logs/
+test_logs/
+*.log
+
+# Test artifacts
+.pytest_cache/
+.coverage
+
+# Credentials
+*.json
+sturdy-hangar-468507-n4-b79b1b8f73ec.json
+
+# Models and data artifacts
+*.pkl
+models/*.csv
+models/*.txt
+
+# Kiro specs
+.kiro/

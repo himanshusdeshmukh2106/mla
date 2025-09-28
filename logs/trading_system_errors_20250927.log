@@ -1,0 +1,1 @@
+2025-09-27 17:00:13,313 - trading_system - ERROR - error:81 - Missing required packages: ['xgboost', 'pandas_ta', 'backtesting']

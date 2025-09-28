@@ -1,0 +1,23 @@
+momentum:
+  macd:
+    fast: 12
+    signal: 9
+    slow: 26
+  rsi_period: 14
+trend:
+  ema_periods:
+  - 12
+  - 26
+  - 50
+  sma_periods:
+  - 20
+  - 50
+  - 200
+volatility:
+  atr_period: 14
+  bollinger_bands:
+    period: 20
+    std: 2
+volume:
+  periods:
+  - 20

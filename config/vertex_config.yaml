@@ -1,0 +1,14 @@
+
+
+# Configuration for Google Cloud Vertex AI
+gcp:
+  project_id: "sturdy-hangar-468507-n4"
+  region: "asia-south1"
+  service_account_key_path: "sturdy-hangar-468507-n4-b79b1b8f73ec.json"
+
+vertex_ai:
+  gcs_bucket_name: "mla1"
+  training_job_display_name: "xgboost-intraday-trading-training"
+  model_display_name: "xgboost-intraday-trading-model"
+  pre_built_container: "us-docker.pkg.dev/vertex-ai/training/xgboost-cpu.1-1:latest"
+  machine_type: "e2-standard-4"

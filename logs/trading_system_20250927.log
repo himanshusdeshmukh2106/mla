@@ -1,0 +1,7 @@
+2025-09-27 17:00:03,033 - trading_system - INFO - info:70 - Initializing XGBoost Trading System
+2025-09-27 17:00:03,041 - trading_system - INFO - info:70 - Configuration manager initialized successfully
+2025-09-27 17:00:13,313 - trading_system - ERROR - error:81 - Missing required packages: ['xgboost', 'pandas_ta', 'backtesting']
+2025-09-27 19:53:04,786 - trading_system - INFO - info:70 - Initializing XGBoost Trading System
+2025-09-27 19:53:04,802 - trading_system - INFO - info:70 - Configuration manager initialized successfully
+2025-09-27 19:53:07,736 - trading_system - INFO - info:70 - All required dependencies are available
+2025-09-27 19:53:07,736 - trading_system - INFO - info:70 - All required dependencies are available

@@ -1,0 +1,9 @@
+end_date: '2023-12-31'
+start_date: '2023-01-01'
+symbols:
+- RELIANCE
+timeframe: 5min
+data_directory: 'data'
+validation:
+  max_missing_pct: 0.05
+  outlier_threshold: 3.0

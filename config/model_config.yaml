@@ -1,0 +1,19 @@
+algorithm: xgboost
+cross_validation:
+  method: TimeSeriesSplit
+  n_splits: 5
+hyperparameters:
+  learning_rate:
+  - 0.01
+  - 0.1
+  - 0.2
+  max_depth:
+  - 3
+  - 5
+  - 7
+  n_estimators:
+  - 100
+  - 200
+  - 300
+objective: binary:logistic
+test_size: 0.2
