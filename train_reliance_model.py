@@ -184,60 +184,77 @@ def prepare_training_data(train_df, test_df):
     return X_train, y_train, X_test, y_test, feature_cols
 
 def train_xgboost_model(X_train, y_train, X_test, y_test, feature_cols):
-    """Train XGBoost model with SMOTE and GridSearchCV"""
+    """Train XGBoost model with scale_pos_weight, RandomizedSearchCV, and Early Stopping"""
     
-    print("Training XGBoost model with SMOTE and TimeSeriesSplit GridSearchCV...")
+    print("Training XGBoost model with scale_pos_weight, RandomizedSearchCV, and Early Stopping...")
     
     try:
         import xgboost as xgb
         from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-        from imblearn.over_sampling import SMOTE
-        from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+        from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit, train_test_split
     except ImportError:
-        print("XGBoost, scikit-learn, or imbalanced-learn not installed. Please install with:")
-        print("   pip install xgboost scikit-learn imbalanced-learn")
+        print("XGBoost or scikit-learn not installed. Please install with:")
+        print("   pip install xgboost scikit-learn")
         return None, None
 
-    # Apply SMOTE to the training data
-    smote = SMOTE(random_state=42)
-    X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
-    
-    print(f"Original training set shape: {X_train.shape}")
-    print(f"Resampled training set shape: {X_train_resampled.shape}")
+    # Calculate scale_pos_weight to handle class imbalance
+    # Formula: count(negative_class) / count(positive_class)
+    scale_pos_weight = y_train.value_counts()[0] / y_train.value_counts()[1]
+    print(f"Calculated scale_pos_weight: {scale_pos_weight:.2f}")
 
-    # Define the parameter grid for GridSearchCV, including regularization
-    param_grid = {
-        'max_depth': [3, 6, 9],
-        'learning_rate': [0.01, 0.1, 0.2],
-        'n_estimators': [100, 200, 300],
-        'subsample': [0.8, 1.0],
-        'colsample_bytree': [0.8, 1.0],
-        'reg_alpha': [0, 0.1, 0.5],  # L1 regularization
-        'reg_lambda': [1, 1.5, 2]     # L2 regularization
-    }
-
-    # Initialize the XGBoost classifier
-    model = xgb.XGBClassifier(
-        objective='binary:logistic', 
-        random_state=42, 
-        eval_metric='logloss', 
-        tree_method='hist', 
-        device='cuda'
+    # Create a validation set for early stopping from the original training data
+    X_train_es, X_val_es, y_train_es, y_val_es = train_test_split(
+        X_train, y_train, test_size=0.2, random_state=42, stratify=y_train
     )
 
-    # Initialize TimeSeriesSplit
+    # Define the expanded parameter grid for RandomizedSearchCV
+    param_grid = {
+        'max_depth': [3, 6, 9, 12],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+        'subsample': [0.7, 0.8, 0.9, 1.0],
+        'colsample_bytree': [0.7, 0.8, 0.9, 1.0],
+        'reg_alpha': [0, 0.1, 0.5, 1.0],
+        'reg_lambda': [1, 1.5, 2, 3]
+    }
+
+    # Initialize the XGBoost classifier with scale_pos_weight and high n_estimators
+    model = xgb.XGBClassifier(
+        objective='binary:logistic',
+        random_state=42,
+        eval_metric='logloss',
+        tree_method='hist',
+        device='cuda',
+        scale_pos_weight=scale_pos_weight,  # Handle imbalance
+        n_estimators=1000  # Set a high number, early stopping will find the optimum
+    )
+
+    # Initialize TimeSeriesSplit for cross-validation
     tscv = TimeSeriesSplit(n_splits=5)
 
-    # Initialize GridSearchCV with TimeSeriesSplit
-    grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=tscv, scoring='f1', n_jobs=-1, verbose=2)
+    # Initialize RandomizedSearchCV
+    random_search = RandomizedSearchCV(
+        estimator=model,
+        param_distributions=param_grid,
+        n_iter=100,
+        cv=tscv,
+        scoring='f1',
+        n_jobs=1,
+        verbose=2,
+        random_state=42
+    )
     
-    # Fit GridSearchCV
-    grid_search.fit(X_train_resampled, y_train_resampled)
+    # Fit RandomizedSearchCV with early stopping
+    random_search.fit(
+        X_train_es, y_train_es,
+        early_stopping_rounds=50,
+        eval_set=[(X_val_es, y_val_es)],
+        verbose=False
+    )
     
-    print(f"Best parameters found: {grid_search.best_params_}")
+    print(f"Best parameters found: {random_search.best_params_}")
     
     # Get the best model
-    best_model = grid_search.best_estimator_
+    best_model = random_search.best_estimator_
     
     # Make predictions
     y_pred = best_model.predict(X_test)

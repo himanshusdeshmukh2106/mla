@@ -1,99 +1,40 @@
+[CV] END colsample_bytree=1.0, learning_rate=0.2, max_depth=9, n_estimators=300, reg_alpha=0.5, reg_lambda=2, subsample=1.0; total time=   1.6s
+[CV] END colsample_bytree=1.0, learning_rate=0.2, max_depth=9, n_estimators=300, reg_alpha=0.5, reg_lambda=2, subsample=1.0; total time=   1.8s
+Best parameters found: {'colsample_bytree': 0.8, 'learning_rate': 0.2, 'max_depth': 9, 'n_estimators': 300, 'reg_alpha': 0.1, 'reg_lambda': 1, 'subsample': 0.8}
+Model training completed
+Test Accuracy: 0.9435
 
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=0.8; total time=   0.6s
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:31] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
+Classification Report:
+              precision    recall  f1-score   support
 
-    E.g. tree_method = "hist", device = "cuda"
+           0       0.95      1.00      0.97      4298
+           1       0.09      0.00      0.01       248
 
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
+    accuracy                           0.94      4546
+   macro avg       0.52      0.50      0.49      4546
+weighted avg       0.90      0.94      0.92      4546
 
-    E.g. tree_method = "hist", device = "cuda"
+Confusion Matrix:
+[[4288   10]
+ [ 247    1]]
 
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
+Top 10 Most Important Features:
+ 1. EMA_Cross            0.2244
+ 2. Volume_Ratio         0.0675
+ 3. MACD                 0.0591
+ 4. Day_of_Week          0.0520
+ 5. Volume_SMA_20        0.0455
+ 6. ATR                  0.0387
+ 7. Time_of_Day          0.0346
+ 8. MACD_Signal          0.0344
+ 9. RSI_Volume_Ratio     0.0306
+10. BB_Width             0.0301
+Saving model and results...
+Model saved to: models/reliance_5min_xgboost.pkl
+Features saved to: models/reliance_5min_features.txt
+Feature importance saved to: models/reliance_5min_feature_importance.csv
 
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=0.8; total time=   0.5s
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=0.8; total time=   0.6s
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=0.8; total time=   0.6s
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:32] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=0.8; total time=   0.8s
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=1.0; total time=   0.5s
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=1.0; total time=   0.5s
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=1.0; total time=   0.5s
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:33] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:34] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  bst.update(dtrain, iteration=i, fobj=obj)
-/usr/local/lib/python3.12/dist-packages/xgboost/core.py:2676: UserWarning: [12:20:34] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
-
-  if len(data.shape) != 1 and self.num_features() != data.shape[1]:
-[CV] END colsample_bytree=0.8, learning_rate=0.01, max_depth=3, n_estimators=200, reg_alpha=0.1, reg_lambda=2, subsample=1.0; total time=   0.5s
-/usr/local/lib/python3.12/dist-packages/xgboost/training.py:183: UserWarning: [12:20:34] WARNING: /workspace/src/common/error_msg.cc:27: The tree method `gpu_hist` is deprecated since 2.0.0. To use GPU training, set the `device` parameter to CUDA instead.
-
-    E.g. tree_method = "hist", device = "cuda"
+============================================================
+TRAINING COMPLETED SUCCESSFULLY!
+Your Reliance 5-min intraday model is ready!
+============================================================
