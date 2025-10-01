@@ -26,7 +26,7 @@ class TargetGenerator:
         self.lookahead_periods = config.get('lookahead_periods', 1)
         self.profit_threshold = config.get('profit_threshold', 0.001)  # 0.1% default
         self.loss_threshold = config.get('loss_threshold', -0.001)  # -0.1% default
-        self.method = config.get('method', 'next_period_return')  # 'next_period_return' or 'fixed_horizon'
+        self.method = config.get('method', 'next_period_return')  # 'next_period_return', 'fixed_horizon', or 'ema_trap'
         
         logger.info(f"TargetGenerator initialized with method: {self.method}, "
                    f"lookahead: {self.lookahead_periods}, "
@@ -50,6 +50,8 @@ class TargetGenerator:
             df = self._generate_next_period_targets(df)
         elif self.method == 'fixed_horizon':
             df = self._generate_fixed_horizon_targets(df)
+        elif self.method == 'ema_trap':
+            df = self._generate_ema_trap_targets(df)
         else:
             raise ValueError(f"Unknown target generation method: {self.method}")
         
@@ -286,3 +288,85 @@ class TargetGenerator:
                    f"test={len(test_indices)}")
         
         return train_indices, val_indices, test_indices
+    
+    def _generate_ema_trap_targets(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Generate targets specifically for EMA trap strategy
+        
+        Args:
+            data: DataFrame with EMA trap features
+            
+        Returns:
+            DataFrame with EMA trap targets added
+        """
+        df = data.copy()
+        
+        # Initialize target column
+        df['target'] = 0
+        df['target_binary'] = 0
+        
+        # Entry conditions for bearish trap (short entry)
+        # Only check candle size for the entry candle (trap confirmation candle)
+        bearish_entry_conditions = (
+            (df['Bearish_Trap_Confirmed'] == 1) &  # Trap confirmed (this IS the entry candle)
+            (df['In_Entry_Window'] == 1) &         # Within trading window
+            (df['ADX_In_Range'] == 1) &            # ADX in 20-36 range
+            (df['Small_Candle'] == 1)              # Entry candle body <= 0.20%
+        )
+        
+        # Entry conditions for bullish trap (long entry)
+        # Only check candle size for the entry candle (trap confirmation candle)
+        bullish_entry_conditions = (
+            (df['Bullish_Trap_Confirmed'] == 1) &  # Trap confirmed (this IS the entry candle)
+            (df['In_Entry_Window'] == 1) &         # Within trading window
+            (df['ADX_In_Range'] == 1) &            # ADX in 20-36 range
+            (df['Small_Candle'] == 1)              # Entry candle body <= 0.20%
+        )
+        
+        # Calculate future returns for validation
+        df['future_return'] = df['close'].shift(-self.lookahead_periods) / df['close'] - 1
+        
+        # For bearish trap entries, we expect price to go down (negative returns)
+        # Target = 1 if we should enter short (expecting price drop)
+        bearish_profitable = (
+            bearish_entry_conditions & 
+            (df['future_return'] <= self.loss_threshold)  # Price drops as expected
+        )
+        
+        # For bullish trap entries, we expect price to go up (positive returns)
+        # Target = 1 if we should enter long (expecting price rise)
+        bullish_profitable = (
+            bullish_entry_conditions & 
+            (df['future_return'] >= self.profit_threshold)  # Price rises as expected
+        )
+        
+        # Set targets
+        df.loc[bearish_profitable, 'target'] = -1  # Short signal
+        df.loc[bullish_profitable, 'target'] = 1   # Long signal
+        
+        # For binary classification, combine both profitable signals
+        df['target_binary'] = (bearish_profitable | bullish_profitable).astype(int)
+        
+        # Add entry signal columns for analysis
+        df['bearish_entry_signal'] = bearish_entry_conditions.astype(int)
+        df['bullish_entry_signal'] = bullish_entry_conditions.astype(int)
+        df['any_entry_signal'] = (bearish_entry_conditions | bullish_entry_conditions).astype(int)
+        
+        # Calculate success rates for logging
+        if bearish_entry_conditions.sum() > 0:
+            bearish_success_rate = bearish_profitable.sum() / bearish_entry_conditions.sum() * 100
+        else:
+            bearish_success_rate = 0
+            
+        if bullish_entry_conditions.sum() > 0:
+            bullish_success_rate = bullish_profitable.sum() / bullish_entry_conditions.sum() * 100
+        else:
+            bullish_success_rate = 0
+        
+        logger.info(f"EMA trap targets generated. "
+                   f"Bearish entries: {bearish_entry_conditions.sum()}, "
+                   f"success rate: {bearish_success_rate:.1f}%. "
+                   f"Bullish entries: {bullish_entry_conditions.sum()}, "
+                   f"success rate: {bullish_success_rate:.1f}%")
+        
+        return df

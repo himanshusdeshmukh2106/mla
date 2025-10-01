@@ -1,11 +1,11 @@
 """
-Feature engineering implementation with technical indicators
+Feature engineering implementation with technical indicators and EMA trap detection
 """
 
 import pandas as pd
 import numpy as np
 import pandas_ta as ta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from src.interfaces import IFeatureEngineer
 from src.logger import get_logger
 
@@ -52,6 +52,15 @@ class FeatureEngineer(IFeatureEngineer):
         df = self.add_momentum_indicators(df)
         df = self.add_volatility_indicators(df)
         df = self.add_volume_indicators(df)
+        
+        # Add EMA trap detection features
+        df = self.add_ema_trap_features(df)
+        
+        # Add time-based features
+        df = self.add_time_features(df)
+        
+        # Add candle analysis features
+        df = self.add_candle_features(df)
         
         # Remove rows with NaN values created by indicators
         initial_rows = len(df)
@@ -259,7 +268,7 @@ class FeatureEngineer(IFeatureEngineer):
         
         # Trend features
         sma_periods = self.trend_config.get('sma_periods', [20, 50, 200])
-        ema_periods = self.trend_config.get('ema_periods', [12, 26, 50])
+        ema_periods = self.trend_config.get('ema_periods', [12, 21, 26, 50])
         
         for period in sma_periods:
             features.append(f'SMA_{period}')
@@ -284,6 +293,33 @@ class FeatureEngineer(IFeatureEngineer):
         features.extend(['OBV', 'Volume_ROC', 'PVT'])
         for period in volume_periods:
             features.extend([f'Volume_SMA_{period}', f'Volume_Ratio_{period}'])
+        
+        # EMA trap features
+        features.extend([
+            'ADX', 'Price_Above_EMA21', 'Price_Below_EMA21', 
+            'Distance_From_EMA21', 'Distance_From_EMA21_Pct',
+            'EMA21_Cross_Above', 'EMA21_Cross_Below',
+            'Bearish_Trap_Setup', 'Bullish_Trap_Setup',
+            'Bearish_Trap_Confirmed', 'Bullish_Trap_Confirmed',
+            'ADX_In_Range'
+        ])
+        
+        # Time features
+        features.extend([
+            'Hour', 'Minute', 'Time_Minutes',
+            'Entry_Window_1', 'Entry_Window_2', 'In_Entry_Window',
+            'Market_Open_Hour', 'First_Hour'
+        ])
+        
+        # Candle features
+        features.extend([
+            'Candle_Body_Size_Pct', 'Small_Candle',
+            'Green_Candle', 'Red_Candle', 'Doji_Candle',
+            'Candle_Range', 'Candle_Range_Pct',
+            'Upper_Shadow', 'Lower_Shadow',
+            'Upper_Shadow_Pct', 'Lower_Shadow_Pct',
+            'Body_To_Range_Ratio'
+        ])
         
         return features
     
@@ -344,4 +380,204 @@ class FeatureEngineer(IFeatureEngineer):
             df['EMA_Cross'] = (df['EMA_12'] > df['EMA_26']).astype(int)
         
         logger.info("Added feature combinations")
+        return df
+    
+    def add_ema_trap_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add EMA trap detection features for the trading strategy
+        
+        Args:
+            data: DataFrame with OHLCV data and EMA indicators
+            
+        Returns:
+            DataFrame with EMA trap features added
+        """
+        df = data.copy()
+        
+        # Ensure we have 21-period EMA
+        if 'EMA_21' not in df.columns:
+            df['EMA_21'] = ta.ema(df['close'], length=21)
+        
+        # Add ADX for trend strength
+        df['ADX'] = ta.adx(df['high'], df['low'], df['close'], length=14)['ADX_14']
+        
+        # Price-EMA relationship features
+        df['Price_Above_EMA21'] = (df['close'] > df['EMA_21']).astype(int)
+        df['Price_Below_EMA21'] = (df['close'] < df['EMA_21']).astype(int)
+        df['Distance_From_EMA21'] = df['close'] - df['EMA_21']
+        df['Distance_From_EMA21_Pct'] = (df['close'] - df['EMA_21']) / df['EMA_21'] * 100
+        
+        # EMA cross detection
+        df['EMA21_Cross_Above'] = self._detect_ema_cross_above(df)
+        df['EMA21_Cross_Below'] = self._detect_ema_cross_below(df)
+        
+        # Trap detection features
+        df['Bearish_Trap_Setup'] = self._detect_bearish_trap_setup(df)
+        df['Bullish_Trap_Setup'] = self._detect_bullish_trap_setup(df)
+        df['Bearish_Trap_Confirmed'] = self._detect_bearish_trap_confirmed(df)
+        df['Bullish_Trap_Confirmed'] = self._detect_bullish_trap_confirmed(df)
+        
+        # Entry condition filters
+        df['ADX_In_Range'] = ((df['ADX'] >= 20) & (df['ADX'] <= 36)).astype(int)
+        
+        logger.info("Added EMA trap detection features")
+        return df
+    
+    def _detect_ema_cross_above(self, df: pd.DataFrame) -> pd.Series:
+        """Detect when price crosses above EMA21"""
+        prev_below = df['close'].shift(1) <= df['EMA_21'].shift(1)
+        curr_above = df['close'] > df['EMA_21']
+        return (prev_below & curr_above).astype(int)
+    
+    def _detect_ema_cross_below(self, df: pd.DataFrame) -> pd.Series:
+        """Detect when price crosses below EMA21"""
+        prev_above = df['close'].shift(1) >= df['EMA_21'].shift(1)
+        curr_below = df['close'] < df['EMA_21']
+        return (prev_above & curr_below).astype(int)
+    
+    def _detect_bearish_trap_setup(self, df: pd.DataFrame) -> pd.Series:
+        """
+        Detect bearish trap setup: price breaks above EMA21 after market open
+        """
+        setup = pd.Series(0, index=df.index)
+        
+        for i in range(1, len(df)):
+            # Check if current candle crosses above EMA21
+            if df['EMA21_Cross_Above'].iloc[i] == 1:
+                setup.iloc[i] = 1
+        
+        return setup
+    
+    def _detect_bullish_trap_setup(self, df: pd.DataFrame) -> pd.Series:
+        """
+        Detect bullish trap setup: price breaks below EMA21 after market open
+        """
+        setup = pd.Series(0, index=df.index)
+        
+        for i in range(1, len(df)):
+            # Check if current candle crosses below EMA21
+            if df['EMA21_Cross_Below'].iloc[i] == 1:
+                setup.iloc[i] = 1
+        
+        return setup
+    
+    def _detect_bearish_trap_confirmed(self, df: pd.DataFrame) -> pd.Series:
+        """
+        Detect bearish trap confirmation: price crosses back below EMA21 after setup
+        """
+        confirmed = pd.Series(0, index=df.index)
+        
+        for i in range(2, len(df)):
+            # Look for cross below after a previous cross above
+            if df['EMA21_Cross_Below'].iloc[i] == 1:
+                # Check if there was a cross above in recent candles
+                lookback_window = min(10, i)  # Look back up to 10 candles
+                for j in range(1, lookback_window + 1):
+                    if df['EMA21_Cross_Above'].iloc[i-j] == 1:
+                        confirmed.iloc[i] = 1
+                        break
+        
+        return confirmed
+    
+    def _detect_bullish_trap_confirmed(self, df: pd.DataFrame) -> pd.Series:
+        """
+        Detect bullish trap confirmation: price crosses back above EMA21 after setup
+        """
+        confirmed = pd.Series(0, index=df.index)
+        
+        for i in range(2, len(df)):
+            # Look for cross above after a previous cross below
+            if df['EMA21_Cross_Above'].iloc[i] == 1:
+                # Check if there was a cross below in recent candles
+                lookback_window = min(10, i)  # Look back up to 10 candles
+                for j in range(1, lookback_window + 1):
+                    if df['EMA21_Cross_Below'].iloc[i-j] == 1:
+                        confirmed.iloc[i] = 1
+                        break
+        
+        return confirmed
+    
+    def add_time_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add time-based features for entry windows
+        
+        Args:
+            data: DataFrame with datetime index
+            
+        Returns:
+            DataFrame with time features added
+        """
+        df = data.copy()
+        
+        # Ensure datetime index
+        if not isinstance(df.index, pd.DatetimeIndex):
+            if 'datetime' in df.columns:
+                df.set_index('datetime', inplace=True)
+            else:
+                logger.warning("No datetime index or column found for time features")
+                return df
+        
+        # Extract time components
+        df['Hour'] = df.index.hour
+        df['Minute'] = df.index.minute
+        df['Time_Minutes'] = df['Hour'] * 60 + df['Minute']
+        
+        # Entry window features (assuming 5-minute candles)
+        # 9:15-9:30 AM window (555-570 minutes from midnight)
+        df['Entry_Window_1'] = ((df['Time_Minutes'] >= 555) & (df['Time_Minutes'] <= 570)).astype(int)
+        
+        # 10:00-11:00 AM window (600-660 minutes from midnight)
+        df['Entry_Window_2'] = ((df['Time_Minutes'] >= 600) & (df['Time_Minutes'] <= 660)).astype(int)
+        
+        # Combined entry window
+        df['In_Entry_Window'] = (df['Entry_Window_1'] | df['Entry_Window_2']).astype(int)
+        
+        # Market session features
+        df['Market_Open_Hour'] = (df['Hour'] == 9).astype(int)
+        df['First_Hour'] = ((df['Time_Minutes'] >= 555) & (df['Time_Minutes'] <= 615)).astype(int)
+        
+        logger.info("Added time-based features")
+        return df
+    
+    def add_candle_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add candle analysis features
+        
+        Args:
+            data: DataFrame with OHLCV data
+            
+        Returns:
+            DataFrame with candle features added
+        """
+        df = data.copy()
+        
+        # Candle body size (percentage)
+        df['Candle_Body_Size_Pct'] = abs(df['close'] - df['open']) / df['open'] * 100
+        
+        # Small candle filter (<=0.20%)
+        df['Small_Candle'] = (df['Candle_Body_Size_Pct'] <= 0.20).astype(int)
+        
+        # Candle direction
+        df['Green_Candle'] = (df['close'] > df['open']).astype(int)
+        df['Red_Candle'] = (df['close'] < df['open']).astype(int)
+        df['Doji_Candle'] = (df['close'] == df['open']).astype(int)
+        
+        # Candle range features
+        df['Candle_Range'] = df['high'] - df['low']
+        df['Candle_Range_Pct'] = (df['high'] - df['low']) / df['open'] * 100
+        
+        # Upper and lower shadows
+        df['Upper_Shadow'] = df['high'] - np.maximum(df['open'], df['close'])
+        df['Lower_Shadow'] = np.minimum(df['open'], df['close']) - df['low']
+        df['Upper_Shadow_Pct'] = df['Upper_Shadow'] / df['open'] * 100
+        df['Lower_Shadow_Pct'] = df['Lower_Shadow'] / df['open'] * 100
+        
+        # Body to range ratio
+        df['Body_To_Range_Ratio'] = np.where(
+            df['Candle_Range'] > 0,
+            df['Candle_Body_Size_Pct'] / df['Candle_Range_Pct'],
+            0
+        )
+        
+        logger.info("Added candle analysis features")
         return df
