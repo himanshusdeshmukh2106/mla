@@ -51,21 +51,78 @@ def setup_environment():
     else:
         print("🖥️  Detected local environment")
     
-    # Add src to path
-    sys.path.append('src')
+    # Add current directory and src to Python path
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    if current_dir not in sys.path:
+        sys.path.insert(0, current_dir)
+    
+    src_dir = os.path.join(current_dir, 'src')
+    if src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+    
+    print(f"📁 Added to Python path: {current_dir}")
+    print(f"📁 Added to Python path: {src_dir}")
 
 # Setup environment
 setup_environment()
 
-from features.engineer import FeatureEngineer
-from features.target_generator import TargetGenerator
-from models.trainer import ModelTrainer
-from models.evaluator import ModelEvaluator
-from models.persistence import ModelPersistence
-from config_manager import ConfigManager
-from logger import get_logger
+try:
+    # Try importing from src package structure
+    from src.features.engineer import FeatureEngineer
+    from src.features.target_generator import TargetGenerator
+    from src.models.trainer import ModelTrainer
+    from src.models.evaluator import ModelEvaluator
+    from src.models.persistence import ModelPersistence
+    from src.config_manager import ConfigManager
+    from src.logger import get_logger
+except ImportError:
+    # Fallback to direct imports
+    try:
+        from features.engineer import FeatureEngineer
+        from features.target_generator import TargetGenerator
+        from models.trainer import ModelTrainer
+        from models.evaluator import ModelEvaluator
+        from models.persistence import ModelPersistence
+        from config_manager import ConfigManager
+        from logger import get_logger
+    except ImportError as e:
+        print(f"❌ Import error: {e}")
+        print("🔧 Trying alternative import method...")
+        
+        # Add more paths and try again
+        import importlib.util
+        
+        def import_from_path(module_name, file_path):
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+        
+        # Import modules directly from file paths
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        src_dir = os.path.join(current_dir, 'src')
+        
+        try:
+            # Import required modules
+            engineer_module = import_from_path("engineer", os.path.join(src_dir, "features", "engineer.py"))
+            FeatureEngineer = engineer_module.FeatureEngineer
+            
+            target_module = import_from_path("target_generator", os.path.join(src_dir, "features", "target_generator.py"))
+            TargetGenerator = target_module.TargetGenerator
+            
+            print("✅ Successfully imported modules using alternative method")
+        except Exception as e2:
+            print(f"❌ Failed to import modules: {e2}")
+            print("💡 Please ensure you're running from the project root directory")
+            sys.exit(1)
 
-logger = get_logger(__name__)
+# Simple logger fallback
+try:
+    logger = get_logger(__name__)
+except:
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
 
 def load_reliance_data():
     """Load and prepare Reliance 5-minute data"""
@@ -242,201 +299,231 @@ def prepare_training_data(targets_df, selected_features):
     return X, y
 
 def train_ema_trap_model(X, y, selected_features):
-    """Train XGBoost model for EMA trap strategy using advanced training pipeline"""
+    """Train XGBoost model for EMA trap strategy using simplified approach"""
     
-    logger.info("Training EMA trap XGBoost model with advanced features...")
+    print("Training EMA trap XGBoost model...")
     
-    # Import advanced training components
-    from models.trainer import ModelTrainer, TrainingConfig, HyperparameterGrid
-    from models.data_splitter import DataSplitter
-    from models.persistence import PersistenceConfig
+    # Import XGBoost and sklearn components directly
+    import xgboost as xgb
+    from sklearn.model_selection import GridSearchCV, TimeSeriesSplit, train_test_split
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
     
-    # Advanced training configuration optimized for EMA trap strategy
-    training_config = TrainingConfig(
-        algorithm="xgboost",
-        objective="binary:logistic",
-        test_size=0.2,
-        cv_splits=5,
-        early_stopping_rounds=50,
-        eval_metric="logloss",
+    # Split data (time-series aware)
+    split_idx = int(len(X) * 0.8)
+    X_train, X_test = X[:split_idx], X[split_idx:]
+    y_train, y_test = y[:split_idx], y[split_idx:]
+    
+    print(f"Data split - Train: {len(X_train)}, Test: {len(X_test)}")
+    
+    # Hyperparameter grid for EMA trap strategy
+    param_grid = {
+        'max_depth': [4, 6, 8],
+        'learning_rate': [0.05, 0.1, 0.15],
+        'n_estimators': [200, 300, 500],
+        'subsample': [0.8, 0.9, 1.0],
+        'colsample_bytree': [0.8, 0.9, 1.0],
+        'min_child_weight': [1, 3, 5],
+        'reg_alpha': [0, 0.1, 0.5],
+        'reg_lambda': [1, 1.5, 2]
+    }
+    
+    # Base XGBoost model
+    base_model = xgb.XGBClassifier(
+        objective='binary:logistic',
+        eval_metric='logloss',
         random_state=42,
+        n_jobs=-1
+    )
+    
+    # Time series cross-validation
+    tscv = TimeSeriesSplit(n_splits=3)  # Reduced for faster training
+    
+    # Grid search with cross-validation
+    print("Performing hyperparameter optimization...")
+    grid_search = GridSearchCV(
+        estimator=base_model,
+        param_grid=param_grid,
+        cv=tscv,
+        scoring='f1',
         n_jobs=-1,
-        verbose=True
+        verbose=1
     )
     
-    # Advanced hyperparameter grid for EMA trap strategy
-    hyperparameter_grid = HyperparameterGrid(
-        max_depth=[4, 6, 8, 10],
-        learning_rate=[0.05, 0.1, 0.15, 0.2],
-        n_estimators=[200, 300, 500, 800],
-        gamma=[0, 0.1, 0.2, 0.3],
-        subsample=[0.7, 0.8, 0.9, 1.0],
-        colsample_bytree=[0.7, 0.8, 0.9, 1.0],
-        min_child_weight=[1, 3, 5, 7],
-        reg_alpha=[0, 0.1, 0.5, 1.0],
-        reg_lambda=[1, 1.5, 2, 3]
-    )
+    # Fit the model
+    grid_search.fit(X_train, y_train)
     
-    # Advanced persistence configuration
-    persistence_config = PersistenceConfig(
-        base_path="models/ema_trap",
-        model_filename="ema_trap_model.pkl",
-        state_filename="ema_trap_state.json",
-        metadata_filename="ema_trap_metadata.pkl",
-        compress_model=True,
-        backup_existing=True,
-        validate_on_load=True
-    )
+    # Get best model
+    best_model = grid_search.best_estimator_
+    best_params = grid_search.best_params_
     
-    # Initialize advanced model trainer
-    trainer = ModelTrainer(
-        config=training_config,
-        hyperparameter_grid=hyperparameter_grid,
-        persistence_config=persistence_config
-    )
+    print(f"Best parameters: {best_params}")
+    print(f"Best CV F1-score: {grid_search.best_score_:.4f}")
     
-    # Create advanced data splitter for time-series aware splitting
-    data_splitter = DataSplitter({
-        'method': 'time_series',
-        'test_size': 0.2,
-        'validation_size': 0.1,
-        'shuffle': False,  # Important for time series
-        'random_state': 42
-    })
+    # Evaluate on test set
+    y_pred = best_model.predict(X_test)
+    y_pred_proba = best_model.predict_proba(X_test)[:, 1]
     
-    # Prepare data with feature names
-    data_df = pd.DataFrame(X, columns=selected_features)
-    data_df['target'] = y
+    # Calculate metrics
+    metrics = {
+        'accuracy': accuracy_score(y_test, y_pred),
+        'precision': precision_score(y_test, y_pred, zero_division=0),
+        'recall': recall_score(y_test, y_pred, zero_division=0),
+        'f1_score': f1_score(y_test, y_pred, zero_division=0),
+        'roc_auc': roc_auc_score(y_test, y_pred_proba) if len(np.unique(y_test)) > 1 else 0.0
+    }
     
-    # Create time-series aware data split
-    data_split = data_splitter.split_data(data_df)
+    # Feature importance
+    feature_importance = {}
+    if hasattr(best_model, 'feature_importances_'):
+        feature_importance = dict(zip(selected_features, best_model.feature_importances_))
     
-    logger.info(f"Data split - Train: {len(data_split.X_train)}, "
-               f"Val: {len(data_split.X_val) if hasattr(data_split, 'X_val') else 0}, "
-               f"Test: {len(data_split.X_test)}")
-    
-    # Train model using advanced pipeline
-    model, metrics = trainer.train_and_evaluate(data_split)
-    
-    # Get training results
+    # Training results
     training_results = {
-        'best_params': trainer.best_params,
-        'feature_names': trainer.feature_names,
-        'training_config': training_config.__dict__,
-        'hyperparameter_grid': hyperparameter_grid.__dict__,
+        'best_params': best_params,
+        'best_cv_score': grid_search.best_score_,
+        'feature_names': selected_features,
+        'feature_importance': feature_importance,
         'data_split_info': {
-            'train_samples': len(data_split.X_train),
-            'test_samples': len(data_split.X_test),
+            'train_samples': len(X_train),
+            'test_samples': len(X_test),
             'feature_count': len(selected_features)
         }
     }
     
-    logger.info("Advanced model training completed")
-    logger.info(f"Best parameters: {trainer.best_params}")
-    logger.info(f"Training accuracy: {metrics.accuracy:.4f}")
-    logger.info(f"Training F1-score: {metrics.f1_score:.4f}")
+    # Create simple data split object
+    class SimpleDataSplit:
+        def __init__(self, X_train, X_test, y_train, y_test):
+            self.X_train = X_train
+            self.X_test = X_test
+            self.y_train = y_train
+            self.y_test = y_test
     
-    return model, training_results, metrics, data_split
+    data_split = SimpleDataSplit(X_train, X_test, y_train, y_test)
+    
+    print("Model training completed")
+    print(f"Test accuracy: {metrics['accuracy']:.4f}")
+    print(f"Test F1-score: {metrics['f1_score']:.4f}")
+    
+    return best_model, training_results, metrics, data_split
 
 def evaluate_model_performance(model, data_split, selected_features, training_results):
-    """Evaluate model performance with advanced detailed metrics"""
+    """Evaluate model performance with simplified metrics"""
     
-    logger.info("Evaluating model performance with advanced metrics...")
+    print("Evaluating model performance...")
     
-    # Import advanced evaluation components
-    from models.evaluator import ModelEvaluator, DetailedModelMetrics
+    from sklearn.metrics import confusion_matrix, classification_report
+    import matplotlib.pyplot as plt
+    import seaborn as sns
     
-    # Initialize advanced evaluator with feature names
-    evaluator = ModelEvaluator(feature_names=selected_features)
+    # Get predictions
+    y_pred = model.predict(data_split.X_test)
+    y_pred_proba = model.predict_proba(data_split.X_test)[:, 1]
     
-    # Perform comprehensive evaluation
-    detailed_metrics = evaluator.evaluate_model(
-        model=model,
-        X_test=data_split.X_test,
-        y_test=data_split.y_test,
-        feature_names=selected_features
-    )
+    # Calculate metrics (already done in training, but let's be explicit)
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
     
-    # Analyze confusion matrix in detail
-    cm_analysis = evaluator.analyze_confusion_matrix(detailed_metrics.confusion_matrix)
+    metrics = {
+        'accuracy': accuracy_score(data_split.y_test, y_pred),
+        'precision': precision_score(data_split.y_test, y_pred, zero_division=0),
+        'recall': recall_score(data_split.y_test, y_pred, zero_division=0),
+        'f1_score': f1_score(data_split.y_test, y_pred, zero_division=0),
+        'roc_auc': roc_auc_score(data_split.y_test, y_pred_proba) if len(np.unique(data_split.y_test)) > 1 else 0.0
+    }
     
-    # Analyze feature importance in detail
-    feature_analysis = evaluator.analyze_feature_importance(
-        model=model,
-        feature_names=selected_features,
-        top_n=15
-    )
+    # Confusion matrix
+    cm = confusion_matrix(data_split.y_test, y_pred)
     
-    # Generate comprehensive evaluation report
-    evaluation_report = evaluator.generate_evaluation_report(
-        metrics=detailed_metrics,
-        cm_analysis=cm_analysis,
-        feature_analysis=feature_analysis
-    )
+    # Feature importance
+    feature_importance = training_results.get('feature_importance', {})
     
-    # Log detailed results
-    logger.info("Advanced Model Evaluation Results:")
-    logger.info(f"  Accuracy:           {detailed_metrics.accuracy:.4f}")
-    logger.info(f"  Precision:          {detailed_metrics.precision:.4f}")
-    logger.info(f"  Recall:             {detailed_metrics.recall:.4f}")
-    logger.info(f"  F1-Score:           {detailed_metrics.f1_score:.4f}")
-    logger.info(f"  ROC-AUC:            {detailed_metrics.roc_auc:.4f}")
-    logger.info(f"  Average Precision:  {detailed_metrics.average_precision:.4f}")
+    # Log results
+    print("Model Evaluation Results:")
+    for metric, value in metrics.items():
+        print(f"  {metric}: {value:.4f}")
     
-    logger.info("Confusion Matrix Analysis:")
-    logger.info(f"  True Positives:     {cm_analysis.true_positives}")
-    logger.info(f"  True Negatives:     {cm_analysis.true_negatives}")
-    logger.info(f"  False Positives:    {cm_analysis.false_positives}")
-    logger.info(f"  False Negatives:    {cm_analysis.false_negatives}")
-    logger.info(f"  Sensitivity (TPR):  {cm_analysis.sensitivity:.4f}")
-    logger.info(f"  Specificity (TNR):  {cm_analysis.specificity:.4f}")
+    print(f"\nConfusion Matrix:")
+    print(cm)
     
-    logger.info("Top 10 Most Important Features:")
-    for i, (feature, importance) in enumerate(feature_analysis.ranked_features[:10], 1):
-        logger.info(f"  {i:2d}. {feature:<25} {importance:.4f}")
+    if feature_importance:
+        print("\nTop 10 Most Important Features:")
+        sorted_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)
+        for i, (feature, importance) in enumerate(sorted_features[:10], 1):
+            print(f"  {i:2d}. {feature:<25} {importance:.4f}")
     
-    # Save evaluation plots
+    # Create simple plots
     try:
-        # Plot and save confusion matrix
-        cm_fig = evaluator.plot_confusion_matrix(
-            detailed_metrics.confusion_matrix,
-            class_names=['No Trade', 'Trade'],
-            title="EMA Trap Strategy - Confusion Matrix"
-        )
-        cm_fig.savefig('ema_trap_confusion_matrix.png', dpi=300, bbox_inches='tight')
-        logger.info("Confusion matrix plot saved to 'ema_trap_confusion_matrix.png'")
+        fig, axes = plt.subplots(1, 2, figsize=(15, 6))
         
-        # Plot and save feature importance
-        fi_fig = evaluator.plot_feature_importance(
-            feature_analysis,
-            top_n=15,
-            title="EMA Trap Strategy - Feature Importance"
-        )
-        fi_fig.savefig('ema_trap_feature_importance.png', dpi=300, bbox_inches='tight')
-        logger.info("Feature importance plot saved to 'ema_trap_feature_importance.png'")
+        # Confusion matrix plot
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[0],
+                   xticklabels=['No Trade', 'Trade'],
+                   yticklabels=['No Trade', 'Trade'])
+        axes[0].set_title('Confusion Matrix')
+        axes[0].set_xlabel('Predicted')
+        axes[0].set_ylabel('Actual')
+        
+        # Feature importance plot
+        if feature_importance:
+            top_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)[:15]
+            features, importances = zip(*top_features)
+            
+            y_pos = np.arange(len(features))
+            axes[1].barh(y_pos, importances, color='lightgreen')
+            axes[1].set_yticks(y_pos)
+            axes[1].set_yticklabels(features)
+            axes[1].invert_yaxis()
+            axes[1].set_xlabel('Importance Score')
+            axes[1].set_title('Top 15 Feature Importance')
+        
+        plt.tight_layout()
+        plt.savefig('ema_trap_evaluation_plots.png', dpi=300, bbox_inches='tight')
+        print("Evaluation plots saved to 'ema_trap_evaluation_plots.png'")
+        plt.show()
         
     except Exception as e:
-        logger.warning(f"Could not save plots: {e}")
+        print(f"Could not create plots: {e}")
     
-    # Save detailed evaluation report
-    with open('ema_trap_evaluation_report.txt', 'w') as f:
-        f.write(evaluation_report)
-    logger.info("Detailed evaluation report saved to 'ema_trap_evaluation_report.txt'")
+    # Save classification report
+    try:
+        report = classification_report(data_split.y_test, y_pred, zero_division=0)
+        with open('ema_trap_classification_report.txt', 'w') as f:
+            f.write("EMA Trap Strategy - Classification Report\n")
+            f.write("=" * 50 + "\n\n")
+            f.write(report)
+            f.write(f"\n\nMetrics Summary:\n")
+            for metric, value in metrics.items():
+                f.write(f"{metric}: {value:.4f}\n")
+        
+        print("Classification report saved to 'ema_trap_classification_report.txt'")
+    except Exception as e:
+        print(f"Could not save report: {e}")
     
     return {
-        'detailed_metrics': detailed_metrics,
-        'confusion_matrix_analysis': cm_analysis,
-        'feature_importance_analysis': feature_analysis,
-        'evaluation_report': evaluation_report
+        'metrics': metrics,
+        'confusion_matrix': cm,
+        'feature_importance': feature_importance,
+        'predictions': y_pred,
+        'prediction_probabilities': y_pred_proba
     }
 
-def save_model_and_results(model, training_results, evaluation_results, selected_features, trainer):
-    """Save the trained model and results using advanced persistence system"""
+def save_model_and_results(model, training_results, evaluation_results, selected_features):
+    """Save the trained model and results using simple approach"""
     
-    logger.info("Saving model and results with advanced persistence...")
+    print("Saving model and results...")
+    
+    import joblib
+    import json
+    
+    # Create models directory
+    os.makedirs('models', exist_ok=True)
+    
+    # Save the model
+    model_path = 'models/ema_trap_xgboost_model.pkl'
+    joblib.dump(model, model_path)
+    print(f"Model saved to: {model_path}")
     
     # Prepare comprehensive metadata
-    training_metadata = {
+    metadata = {
         'strategy_name': 'EMA Trap Strategy',
         'algorithm': 'XGBoost',
         'data_source': 'Reliance 5-minute OHLCV data',
@@ -454,75 +541,25 @@ def save_model_and_results(model, training_results, evaluation_results, selected
             'entry_windows': ['9:15-9:30', '10:00-11:00'],
             'max_candle_body_pct': 0.20
         },
-        'data_split_info': training_results.get('data_split_info', {}),
-        'evaluation_summary': {
-            'accuracy': evaluation_results['detailed_metrics'].accuracy,
-            'precision': evaluation_results['detailed_metrics'].precision,
-            'recall': evaluation_results['detailed_metrics'].recall,
-            'f1_score': evaluation_results['detailed_metrics'].f1_score,
-            'roc_auc': evaluation_results['detailed_metrics'].roc_auc
-        }
-    }
-    
-    # Feature configuration
-    feature_config = {
         'selected_features': selected_features,
-        'feature_groups': {
-            'ema_trap_features': [
-                'EMA_21', 'ADX', 'Distance_From_EMA21_Pct',
-                'Bearish_Trap_Confirmed', 'Bullish_Trap_Confirmed',
-                'In_Entry_Window', 'ADX_In_Range', 'Candle_Body_Size_Pct'
-            ],
-            'technical_indicators': [
-                'RSI', 'MACD', 'MACD_Signal', 'BB_Position', 'ATR'
-            ],
-            'time_features': [
-                'Hour', 'Minute', 'Entry_Window_1', 'Entry_Window_2'
-            ],
-            'candle_features': [
-                'Green_Candle', 'Red_Candle', 'Upper_Shadow_Pct', 'Lower_Shadow_Pct'
-            ]
-        },
-        'feature_engineering_config': {
-            'ema_periods': [12, 21, 26, 50],
-            'sma_periods': [20, 50, 200],
-            'rsi_period': 14,
-            'adx_period': 14,
-            'bollinger_bands_period': 20
-        }
-    }
-    
-    # Convert evaluation metrics to the format expected by persistence system
-    performance_metrics = evaluation_results['detailed_metrics']
-    
-    # Use the trainer's comprehensive save method
-    model_path = trainer.save_model_comprehensive(
-        model=model,
-        model_name='ema_trap_xgboost_v1',
-        feature_config=feature_config,
-        performance_metrics=performance_metrics,
-        training_metadata=training_metadata
-    )
-    
-    logger.info(f"Model saved comprehensively to: {model_path}")
-    
-    # Also save additional analysis results
-    analysis_results = {
-        'confusion_matrix_analysis': evaluation_results['confusion_matrix_analysis'].__dict__,
-        'feature_importance_analysis': {
-            'ranked_features': evaluation_results['feature_importance_analysis'].ranked_features,
-            'top_features': evaluation_results['feature_importance_analysis'].top_features
-        },
         'training_results': training_results,
+        'evaluation_metrics': evaluation_results['metrics'],
         'model_path': model_path
     }
     
-    # Save analysis results as JSON
-    import json
-    with open('ema_trap_analysis_results.json', 'w') as f:
-        json.dump(analysis_results, f, indent=2, default=str)
+    # Save metadata as JSON
+    metadata_path = 'models/ema_trap_metadata.json'
+    with open(metadata_path, 'w') as f:
+        json.dump(metadata, f, indent=2, default=str)
     
-    logger.info("Additional analysis results saved to 'ema_trap_analysis_results.json'")
+    print(f"Metadata saved to: {metadata_path}")
+    
+    # Save feature importance separately
+    if evaluation_results.get('feature_importance'):
+        feature_importance_path = 'models/ema_trap_feature_importance.json'
+        with open(feature_importance_path, 'w') as f:
+            json.dump(evaluation_results['feature_importance'], f, indent=2)
+        print(f"Feature importance saved to: {feature_importance_path}")
     
     return model_path
 
@@ -606,31 +643,17 @@ def main():
             print(f"⚠️  Warning: Only {positive_samples} positive samples found.")
             print("   Consider relaxing the strategy conditions or using more data.")
         
-        # 7. Train model with advanced features
-        print("\n7. Training XGBoost model with advanced pipeline...")
+        # 7. Train model
+        print("\n7. Training XGBoost model...")
         model, training_results, training_metrics, data_split = train_ema_trap_model(X, y, selected_features)
         
-        # 8. Evaluate model with advanced metrics
-        print("\n8. Evaluating model performance with advanced metrics...")
+        # 8. Evaluate model
+        print("\n8. Evaluating model performance...")
         evaluation_results = evaluate_model_performance(model, data_split, selected_features, training_results)
         
-        # 9. Save model with advanced persistence
-        print("\n9. Saving model and results with advanced persistence...")
-        # We need to get the trainer instance for comprehensive saving
-        from models.trainer import ModelTrainer, TrainingConfig, HyperparameterGrid
-        from models.persistence import PersistenceConfig
-        
-        # Recreate trainer for saving (in a real scenario, we'd pass it from training function)
-        persistence_config = PersistenceConfig(
-            base_path="models/ema_trap",
-            compress_model=True,
-            backup_existing=True
-        )
-        trainer = ModelTrainer(persistence_config=persistence_config)
-        trainer.feature_names = selected_features
-        trainer.best_params = training_results.get('best_params', {})
-        
-        model_path = save_model_and_results(model, training_results, evaluation_results, selected_features, trainer)
+        # 9. Save model
+        print("\n9. Saving model and results...")
+        model_path = save_model_and_results(model, training_results, evaluation_results, selected_features)
         
         # 10. Summary
         print("\n" + "=" * 60)
@@ -638,12 +661,11 @@ def main():
         print(f"📊 Dataset: {len(targets_df)} samples")
         print(f"🎯 Entry signals: {signal_analysis['total_signals']}")
         print(f"🤖 Model saved: {model_path}")
-        print(f"📈 Test accuracy: {evaluation_results['detailed_metrics'].accuracy:.4f}")
-        print(f"📈 Test F1-score: {evaluation_results['detailed_metrics'].f1_score:.4f}")
-        print(f"📈 Test ROC-AUC: {evaluation_results['detailed_metrics'].roc_auc:.4f}")
-        print(f"📊 Confusion matrix plots saved")
-        print(f"📊 Feature importance plots saved")
-        print(f"📄 Detailed evaluation report saved")
+        print(f"📈 Test accuracy: {evaluation_results['metrics']['accuracy']:.4f}")
+        print(f"📈 Test F1-score: {evaluation_results['metrics']['f1_score']:.4f}")
+        print(f"📈 Test ROC-AUC: {evaluation_results['metrics']['roc_auc']:.4f}")
+        print(f"📊 Evaluation plots saved")
+        print(f"📄 Classification report saved")
         print("=" * 60)
         
         return model, evaluation_results
