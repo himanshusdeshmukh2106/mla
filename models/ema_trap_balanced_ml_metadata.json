@@ -1,0 +1,193 @@
+{
+  "model_type": "Balanced EMA Trap Strategy",
+  "algorithm": "XGBoost",
+  "training_date": "2025-10-03T14:46:31.656498",
+  "features_count": 51,
+  "features": [
+    "EMA_21",
+    "Distance_From_EMA21_Pct",
+    "EMA21_Cross_Above",
+    "EMA21_Cross_Below",
+    "Crosses_Above_Last_2",
+    "Crosses_Below_Last_2",
+    "Crosses_Above_Last_3",
+    "Crosses_Below_Last_3",
+    "Crosses_Above_Last_5",
+    "Crosses_Below_Last_5",
+    "Crosses_Above_Last_10",
+    "Crosses_Below_Last_10",
+    "Distance_EMA_Change",
+    "Distance_EMA_Trend",
+    "ADX",
+    "ADX_Change",
+    "ADX_Very_Weak",
+    "ADX_Weak",
+    "ADX_Optimal",
+    "ADX_Strong",
+    "ADX_Very_Strong",
+    "Hour",
+    "Minute",
+    "Time_Slot",
+    "Is_9_15_to_9_30",
+    "Is_9_30_to_10_00",
+    "Is_10_00_to_10_30",
+    "Is_10_30_to_11_00",
+    "Is_11_00_to_12_00",
+    "Candle_Body_Pct",
+    "Candle_Range_Pct",
+    "Candle_Efficiency",
+    "Micro_Candle",
+    "Tiny_Candle",
+    "Small_Candle",
+    "Medium_Candle",
+    "Green_Candle",
+    "Red_Candle",
+    "Price_Change_1",
+    "Price_Change_3",
+    "Price_Change_5",
+    "Price_Momentum",
+    "Volume_Ratio",
+    "Volume_Change",
+    "Very_Low_Volume",
+    "Low_Volume",
+    "Normal_Volume",
+    "High_Volume",
+    "EMA_ADX_Signal",
+    "Volume_Candle_Signal",
+    "Time_EMA_Signal"
+  ],
+  "metrics": {
+    "accuracy": 0.8003268864069736,
+    "precision": 0.5201511335012594,
+    "recall": 0.5398692810457516,
+    "f1_score": 0.5298268120590122,
+    "roc_auc": 0.7731931680678695,
+    "optimal_threshold": 0.5499999999999999
+  },
+  "optimal_threshold": 0.5499999999999999,
+  "feature_importance": [
+    [
+      "Candle_Range_Pct",
+      "0.10113089"
+    ],
+    [
+      "Hour",
+      "0.068434164"
+    ],
+    [
+      "Time_Slot",
+      "0.06449027"
+    ],
+    [
+      "Minute",
+      "0.051832125"
+    ],
+    [
+      "Is_9_15_to_9_30",
+      "0.03734385"
+    ],
+    [
+      "Time_EMA_Signal",
+      "0.037163015"
+    ],
+    [
+      "EMA_21",
+      "0.026791213"
+    ],
+    [
+      "High_Volume",
+      "0.021823043"
+    ],
+    [
+      "Candle_Body_Pct",
+      "0.020739157"
+    ],
+    [
+      "Price_Change_5",
+      "0.018932804"
+    ],
+    [
+      "Distance_From_EMA21_Pct",
+      "0.018244023"
+    ],
+    [
+      "Crosses_Below_Last_10",
+      "0.01774052"
+    ],
+    [
+      "Crosses_Above_Last_2",
+      "0.017197799"
+    ],
+    [
+      "Price_Momentum",
+      "0.017081944"
+    ],
+    [
+      "Price_Change_3",
+      "0.017015683"
+    ],
+    [
+      "Is_10_00_to_10_30",
+      "0.016691066"
+    ],
+    [
+      "EMA21_Cross_Above",
+      "0.01659861"
+    ],
+    [
+      "Volume_Change",
+      "0.016525751"
+    ],
+    [
+      "ADX_Very_Strong",
+      "0.016369361"
+    ],
+    [
+      "ADX_Weak",
+      "0.015738556"
+    ],
+    [
+      "ADX",
+      "0.015239866"
+    ],
+    [
+      "Candle_Efficiency",
+      "0.014983626"
+    ],
+    [
+      "Crosses_Above_Last_3",
+      "0.01495432"
+    ],
+    [
+      "Is_9_30_to_10_00",
+      "0.014819955"
+    ],
+    [
+      "Crosses_Above_Last_10",
+      "0.014605844"
+    ],
+    [
+      "Is_11_00_to_12_00",
+      "0.014557712"
+    ],
+    [
+      "Distance_EMA_Trend",
+      "0.014516226"
+    ],
+    [
+      "Tiny_Candle",
+      "0.014414592"
+    ],
+    [
+      "ADX_Very_Weak",
+      "0.014361449"
+    ],
+    [
+      "Volume_Ratio",
+      "0.014328064"
+    ]
+  ],
+  "training_time": "10-12 minutes",
+  "quality": "98% of optimized, 50% time",
+  "usage": "Use model.predict_proba() >= 0.55 for trading decisions"
+}
