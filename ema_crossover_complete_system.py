@@ -339,7 +339,7 @@ if __name__ == "__main__":
     
     try:
         df_final, feature_importance = system.run_complete_pipeline(
-            "testing data/reliance_data_5min_full_year_testing.csv"
+            "data/reliance_data_5min_full_year.csv"
         )
         
         print("\n📋 NEXT STEPS:")
