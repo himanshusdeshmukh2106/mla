@@ -1,0 +1,108 @@
+EMA CROSSOVER MODEL - COMPLETE FEATURE LIST
+================================================================================
+
+
+Core EMA Features (11 features):
+  1. EMA_8
+  2. EMA_30
+  3. EMA_Spread
+  4. EMA_Spread_ROC
+  5. EMA_8_Slope_3
+  6. EMA_8_Slope_5
+  7. EMA_8_Slope_10
+  8. EMA_30_Slope_3
+  9. EMA_30_Slope_5
+  10. EMA_30_Slope_10
+  11. EMA_8_Above_30
+
+EMA Acceleration (2 features):
+  1. EMA_8_Acceleration
+  2. EMA_30_Acceleration
+
+Crossover Features (2 features):
+  1. EMA_Cross_Above
+  2. EMA_Cross_Below
+
+Price-EMA Relationship (5 features):
+  1. Price_Distance_EMA8
+  2. Price_Distance_EMA30
+  3. Price_Distance_EMA8_ROC
+  4. Price_Distance_EMA30_ROC
+  5. Price_Position_Flag
+
+Price Action (10 features):
+  1. Candle_Body_Size
+  2. Candle_Range
+  3. Wick_to_Body_Ratio
+  4. Upper_Wick
+  5. Lower_Wick
+  6. Green_Candle
+  7. Red_Candle
+  8. Strong_Candle_10
+  9. Strong_Candle_20
+  10. Strong_Candle_50
+
+Volatility (3 features):
+  1. Price_Returns
+  2. Rolling_Volatility
+  3. Volatility_Ratio
+
+Volume (6 features):
+  1. Volume_MA20
+  2. Volume_MA50
+  3. Volume_Spike
+  4. Volume_ROC
+  5. Volume_Trend
+  6. Volume_Price_Corr
+
+Historical Context (Lags) (16 features):
+  1. EMA_Spread_Lag_1
+  2. EMA_Spread_Lag_2
+  3. EMA_Spread_Lag_3
+  4. EMA_Spread_Lag_5
+  5. Price_Distance_EMA30_Lag_1
+  6. Price_Distance_EMA30_Lag_2
+  7. Price_Distance_EMA30_Lag_3
+  8. Price_Distance_EMA30_Lag_5
+  9. Returns_Lag_1
+  10. Returns_Lag_2
+  11. Returns_Lag_3
+  12. Returns_Lag_5
+  13. Cross_Above_Last_5
+  14. Cross_Above_Last_10
+  15. Cross_Above_Last_20
+  16. Cross_Below_Last_5
+
+Crossover History (2 features):
+  1. Cross_Below_Last_10
+  2. Cross_Below_Last_20
+
+Swing Levels (12 features):
+  1. Swing_High_5
+  2. Swing_High_10
+  3. Swing_High_20
+  4. Swing_Low_5
+  5. Swing_Low_10
+  6. Swing_Low_20
+  7. Distance_to_Swing_High_5
+  8. Distance_to_Swing_High_10
+  9. Distance_to_Swing_High_20
+  10. Distance_to_Swing_Low_5
+  11. Distance_to_Swing_Low_10
+  12. Distance_to_Swing_Low_20
+
+Time Features (6 features):
+  1. Hour
+  2. Minute
+  3. Time_Slot
+  4. Best_Hours
+  5. Opening_Hour
+  6. Closing_Hour
+
+Pattern Recognition (3 features):
+  1. Doji
+  2. Hammer
+  3. Shooting_Star
+
+================================================================================
+TOTAL: 78 features
