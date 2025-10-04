@@ -221,7 +221,8 @@ class EMA_CrossoverSystem:
             'subsample': 0.8,
             'colsample_bytree': 0.8,
             'random_state': 42,
-            'n_jobs': -1
+            'n_jobs': -1,
+            'early_stopping_rounds': 50  # Moved to params for newer XGBoost
         }
         
         # Train
@@ -229,7 +230,6 @@ class EMA_CrossoverSystem:
         self.model = xgb.XGBClassifier(**params)
         self.model.fit(X_train, y_train, 
                       eval_set=[(X_test, y_test)],
-                      early_stopping_rounds=50,
                       verbose=False)
         
         # Evaluate
