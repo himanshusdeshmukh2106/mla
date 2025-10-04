@@ -1,0 +1,10 @@
+2025-10-04 00:54:42,724 - backtest_ema_trap_improved - INFO - info:70 - Loaded model from models/ema_trap_balanced_ml.pkl
+2025-10-04 00:54:42,725 - backtest_ema_trap_improved - INFO - info:70 - Loaded 51 features from metadata
+2025-10-04 00:54:42,725 - backtest_ema_trap_improved - INFO - info:70 - Using confidence threshold: 0.7
+2025-10-04 00:54:42,725 - backtest_ema_trap_improved - INFO - info:70 - Using ATR-based stop loss: 1.5x ATR
+2025-10-04 00:54:42,725 - backtest_ema_trap_improved - INFO - info:70 - Minimum ADX: 25
+2025-10-04 00:54:42,730 - backtest_ema_trap_improved - INFO - info:70 - Loading test data from testing data/reliance_data_5min_full_year_testing.csv
+2025-10-04 00:54:42,809 - backtest_ema_trap_improved - INFO - info:70 - Loaded 4596 candles from 2024-01-01 09:15:00+05:30 to 2024-03-28 15:25:00+05:30
+2025-10-04 00:54:43,463 - backtest_ema_trap_improved - INFO - info:70 - Created 51 features
+2025-10-04 00:54:43,468 - backtest_ema_trap_improved - INFO - info:70 - After preprocessing: 4568 candles ready for backtesting
+2025-10-04 00:54:44,398 - backtest_ema_trap_improved - INFO - info:70 - Saved detailed results to backtest_results_final.csv

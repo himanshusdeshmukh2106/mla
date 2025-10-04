@@ -19,27 +19,34 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
     def __init__(self, model_path):
         super().__init__(model_path)
         
-        # FINAL OPTIMIZED PARAMETERS
-        self.profit_target_pct = 0.006  # 0.6% (easier to hit)
-        self.atr_multiplier = 1.5       # Stop loss = 1.5 x ATR
-        self.trailing_stop_pct = 0.003  # 0.3% trailing stop
-        self.max_holding_candles = 15   # Reduced to 15 candles (75 min)
+        # OPTIMIZED PARAMETERS (From ATR grid search optimization)
+        self.atr_multiplier = 2.0       # Stop loss = 2.0 x ATR (wider stops!)
+        self.profit_target_atr = 3.0    # Profit target = 3.0 x ATR (1.5:1 R:R!)
+        self.trailing_stop_atr = 1.5    # Trailing stop = 1.5 x ATR
+        self.breakeven_rr = 1.5         # Move to breakeven at 1.5R
+        self.trailing_start_rr = 2.0    # Start trailing at 2.0R
+        self.max_holding_candles = 15   # Max 15 candles (75 min)
         
-        # ULTRA-STRICT FILTERS
-        self.confidence_threshold = 0.80  # Ultra-high confidence
-        self.min_adx = 28                 # Stronger trends only
+        # OPTIMIZED FILTERS (From grid search)
+        self.confidence_threshold = 0.80  # 80% confidence
+        self.min_adx = 30                 # ADX ≥ 30
         self.best_hours_only = True       # Only trade 10 AM - 2 PM
         self.use_confirmation = True
+        self.ema_trend_filter = True      # CRITICAL: Only trade in uptrends!
         
-        print(f"🎯 FINAL OPTIMIZED SETTINGS:")
+        print(f"🎯 OPTIMIZED SETTINGS (From ATR Grid Search):")
         print(f"   Confidence: {self.confidence_threshold}")
         print(f"   Min ADX: {self.min_adx}")
-        print(f"   Profit Target: {self.profit_target_pct*100}%")
-        print(f"   Trailing Stop: {self.trailing_stop_pct*100}%")
+        print(f"   Stop Loss: {self.atr_multiplier}x ATR")
+        print(f"   Profit Target: {self.profit_target_atr}x ATR (1.5:1 R:R)")
+        print(f"   Breakeven: {self.breakeven_rr}R")
+        print(f"   Trailing Start: {self.trailing_start_rr}R")
+        print(f"   Trailing Stop: {self.trailing_stop_atr}x ATR")
+        print(f"   EMA Trend Filter: {self.ema_trend_filter}")
         print(f"   Trading Hours: 10:00 AM - 2:00 PM only")
     
     def generate_signals(self, df):
-        """Generate signals with ultra-strict filters"""
+        """Generate signals with ultra-strict filters including EMA trend"""
         from datetime import time
         
         # Get predictions
@@ -48,6 +55,11 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
         
         df['signal_prob'] = probabilities
         df['signal'] = 0
+        
+        # Calculate EMA for trend filter
+        if self.ema_trend_filter:
+            df['EMA_50'] = df['close'].ewm(span=50, adjust=False).mean()
+            df['ema_slope'] = df['EMA_50'].diff(5)  # 5-candle slope
         
         # Apply ultra-strict filters
         for idx in range(len(df)):
@@ -64,6 +76,11 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
             # Filter 3: Best hours only (10 AM - 2 PM)
             if self.best_hours_only:
                 if not (time(10, 0) <= row['datetime'].time() <= time(14, 0)):
+                    continue
+            
+            # Filter 4: EMA trend (CRITICAL!)
+            if self.ema_trend_filter and idx >= 5:
+                if row['ema_slope'] <= 0:  # Only trade in uptrend
                     continue
             
             df.at[idx, 'signal'] = 1
@@ -87,7 +104,10 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
         entry_time = None
         stop_loss_price = None
         profit_target_price = None
-        highest_price = None  # For trailing stop
+        highest_price = None
+        initial_risk = None
+        breakeven_triggered = False
+        trailing_active = False
         
         for idx in range(len(df)):
             row = df.iloc[idx]
@@ -96,13 +116,29 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
                 current_price = row['close']
                 candles_held = idx - entry_idx
                 
-                # Update highest price for trailing stop
+                # Update highest price
                 if current_price > highest_price:
                     highest_price = current_price
-                    # Update trailing stop
-                    trailing_stop = highest_price * (1 - self.trailing_stop_pct)
-                    if trailing_stop > stop_loss_price:
-                        stop_loss_price = trailing_stop
+                
+                # Calculate current R:R
+                current_gain = highest_price - entry_price
+                current_rr = current_gain / initial_risk if initial_risk > 0 else 0
+                
+                # Breakeven logic: Move stop to entry when target R:R reached
+                if not breakeven_triggered and current_rr >= self.breakeven_rr:
+                    stop_loss_price = entry_price  # Move to breakeven
+                    breakeven_triggered = True
+                
+                # Trailing stop logic: Start trailing when target R:R reached
+                if not trailing_active and current_rr >= self.trailing_start_rr:
+                    trailing_active = True
+                
+                # Update trailing stop if active
+                if trailing_active:
+                    atr_value = row['ATR']
+                    new_trailing_stop = highest_price - (atr_value * self.trailing_stop_atr)
+                    if new_trailing_stop > stop_loss_price:
+                        stop_loss_price = new_trailing_stop
                 
                 # Exit conditions
                 exit_reason = None
@@ -130,6 +166,8 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
                 if exit_reason:
                     pnl_pct = (exit_price - entry_price) / entry_price
                     
+                    pnl_r = (exit_price - entry_price) / initial_risk if initial_risk > 0 else 0
+                    
                     trade = {
                         'entry_time': entry_time,
                         'entry_price': entry_price,
@@ -138,16 +176,22 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
                         'exit_reason': exit_reason,
                         'pnl_pct': pnl_pct * 100,
                         'pnl_points': exit_price - entry_price,
+                        'pnl_r': pnl_r,
                         'candles_held': candles_held,
                         'win': 1 if pnl_pct > 0 else 0,
                         'stop_loss_pct': (stop_loss_price - entry_price) / entry_price * 100,
                         'entry_adx': df.iloc[entry_idx]['ADX'],
                         'entry_confidence': df.iloc[entry_idx]['signal_prob'],
-                        'highest_price': highest_price
+                        'highest_price': highest_price,
+                        'max_rr_reached': current_rr,
+                        'breakeven_triggered': breakeven_triggered,
+                        'trailing_triggered': trailing_active
                     }
                     
                     self.trades.append(trade)
                     in_trade = False
+                    breakeven_triggered = False
+                    trailing_active = False
                     
                 continue
             
@@ -165,19 +209,22 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
                 entry_time = row['datetime']
                 highest_price = entry_price
                 
-                # ATR-based stop loss
+                # ATR-based stop loss and profit target
                 atr_value = row['ATR']
                 stop_loss_price = entry_price - (atr_value * self.atr_multiplier)
+                profit_target_price = entry_price + (atr_value * self.profit_target_atr)
                 
-                # Profit target
-                profit_target_price = entry_price * (1 + self.profit_target_pct)
+                initial_risk = entry_price - stop_loss_price
+                profit_target_pct = (profit_target_price - entry_price) / entry_price
                 
-                print(f"📈 ENTRY: {entry_time.strftime('%Y-%m-%d %H:%M')} @ {entry_price:.2f} | Target: {profit_target_price:.2f} (+{self.profit_target_pct*100:.1f}%) | ADX: {row['ADX']:.0f} | Conf: {row['signal_prob']:.2f}")
+                print(f"📈 ENTRY: {entry_time.strftime('%Y-%m-%d %H:%M')} @ {entry_price:.2f} | Target: {profit_target_price:.2f} (+{profit_target_pct*100:.1f}%) | ADX: {row['ADX']:.0f} | Conf: {row['signal_prob']:.2f}")
         
         # Close any open trade
         if in_trade:
             row = df.iloc[-1]
             pnl_pct = (row['close'] - entry_price) / entry_price
+            pnl_r = (row['close'] - entry_price) / initial_risk if initial_risk > 0 else 0
+            current_rr = (highest_price - entry_price) / initial_risk if initial_risk > 0 else 0
             
             trade = {
                 'entry_time': entry_time,
@@ -187,12 +234,16 @@ class FinalOptimizedBacktester(ImprovedEMATrapBacktester):
                 'exit_reason': 'end_of_data',
                 'pnl_pct': pnl_pct * 100,
                 'pnl_points': row['close'] - entry_price,
+                'pnl_r': pnl_r,
                 'candles_held': len(df) - entry_idx,
                 'win': 1 if pnl_pct > 0 else 0,
                 'stop_loss_pct': (stop_loss_price - entry_price) / entry_price * 100,
                 'entry_adx': df.iloc[entry_idx]['ADX'],
                 'entry_confidence': df.iloc[entry_idx]['signal_prob'],
-                'highest_price': highest_price
+                'highest_price': highest_price,
+                'max_rr_reached': current_rr,
+                'breakeven_triggered': breakeven_triggered,
+                'trailing_triggered': trailing_active
             }
             self.trades.append(trade)
         

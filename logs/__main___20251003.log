@@ -106,3 +106,9 @@
 2025-10-03 21:49:42,010 - __main__ - INFO - info:70 - ENTRY: 2024-03-27 11:50:00+05:30 @ 1492.25 | SL: 1487.84 (-0.30%) | Target: 1499.71 | ADX: 60.5 | Conf: 0.724
 2025-10-03 21:49:42,031 - __main__ - INFO - info:70 - Simulation complete: 95 trades executed
 2025-10-03 21:49:42,062 - __main__ - INFO - info:70 - Saved detailed results to backtest_results_improved.csv
+2025-10-03 23:35:15,682 - __main__ - INFO - info:70 - Loaded model from models/ema_trap_balanced_ml.pkl
+2025-10-03 23:35:15,682 - __main__ - INFO - info:70 - Loading test data from testing data/reliance_data_5min_full_year_testing.csv
+2025-10-03 23:35:16,194 - __main__ - INFO - info:70 - Prepared 4568 candles for optimization
+2025-10-03 23:37:55,175 - __main__ - INFO - info:70 - Loaded model from models/ema_trap_balanced_ml.pkl
+2025-10-03 23:37:55,176 - __main__ - INFO - info:70 - Loading test data from testing data/reliance_data_5min_full_year_testing.csv
+2025-10-03 23:37:55,787 - __main__ - INFO - info:70 - Prepared 4568 candles for optimization
