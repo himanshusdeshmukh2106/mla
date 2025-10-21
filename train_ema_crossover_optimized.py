@@ -201,7 +201,7 @@ class OptimizedEMACrossoverTrainer:
                 # Lower learning rate for better generalization (was 0.01-0.3, now 0.005-0.1)
                 'learning_rate': trial.suggest_float('learning_rate', 0.005, 0.1, log=True),
                 # Reduced n_estimators (early stopping will handle this)
-                'n_estimators': trial.suggest_int('n_estimators', 100, 300),
+                'n_estimators': trial.suggest_int('n_estimators', 100, 500),
                 # More aggressive subsampling to reduce overfitting (was 0.6-1.0, now 0.5-0.9)
                 'subsample': trial.suggest_float('subsample', 0.5, 0.9),
                 'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9),
@@ -215,19 +215,26 @@ class OptimizedEMACrossoverTrainer:
                 # Handle class imbalance
                 'scale_pos_weight': scale_pos_weight,
                 'random_state': 42,
-                'n_jobs': -1,
-                'early_stopping_rounds': 50  # Critical: stop when no improvement
+                'n_jobs': -1
             }
             
             model = xgb.XGBClassifier(**params)
             model.fit(
                 X_train, y_train, 
-                eval_set=[(X_val, y_val)], 
+                eval_set=[(X_val, y_val)],
+                early_stopping_rounds=50,
                 verbose=False
             )
             
             y_pred = model.predict(X_val)
-            return f1_score(y_val, y_pred)
+            y_train_pred = model.predict(X_train)
+            
+            train_f1 = f1_score(y_train, y_train_pred)
+            val_f1 = f1_score(y_val, y_pred)
+            
+            # Penalize overfitting: if train >> val, reduce score
+            overfitting_penalty = abs(train_f1 - val_f1)
+            return val_f1 - (overfitting_penalty * 0.5)
         
         study = optuna.create_study(direction='maximize', study_name='xgboost')
         study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
@@ -280,7 +287,14 @@ class OptimizedEMACrossoverTrainer:
             )
             
             y_pred = model.predict(X_val)
-            return f1_score(y_val, y_pred)
+            y_train_pred = model.predict(X_train)
+            
+            train_f1 = f1_score(y_train, y_train_pred)
+            val_f1 = f1_score(y_val, y_pred)
+            
+            # Penalize overfitting: if train >> val, reduce score
+            overfitting_penalty = abs(train_f1 - val_f1)
+            return val_f1 - (overfitting_penalty * 0.5)
         
         study = optuna.create_study(direction='maximize', study_name='lightgbm')
         study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
@@ -351,6 +365,7 @@ class OptimizedEMACrossoverTrainer:
             xgb_model.fit(
                 X_train_final, y_train_final,
                 eval_set=[(X_val_final, y_val_final)],
+                early_stopping_rounds=50,
                 verbose=False
             )
             
@@ -441,6 +456,7 @@ class OptimizedEMACrossoverTrainer:
         xgb_model.fit(
             X_train_opt, y_train_opt,
             eval_set=[(X_val, y_val), (X_test, y_test)],
+            early_stopping_rounds=50,
             verbose=True
         )
         
@@ -478,9 +494,19 @@ class OptimizedEMACrossoverTrainer:
         ensemble_pred = self.ensemble_model.predict(X_test)
         ensemble_proba = self.ensemble_model.predict_proba(X_test)[:, 1]
         
-        # Metrics
+        # Calculate metrics for both train and test
+        # Train predictions
+        xgb_train_pred = xgb_model.predict(X_train_opt)
+        lgb_train_pred = lgb_model.predict(X_train_opt)
+        ensemble_train_pred = self.ensemble_model.predict(X_train_opt)
+        
+        # Test metrics
         metrics = {
             'xgboost': {
+                'train_accuracy': accuracy_score(y_train_opt, xgb_train_pred),
+                'train_f1': f1_score(y_train_opt, xgb_train_pred, zero_division=0),
+                'test_accuracy': accuracy_score(y_test, xgb_pred),
+                'test_f1': f1_score(y_test, xgb_pred, zero_division=0),
                 'accuracy': accuracy_score(y_test, xgb_pred),
                 'precision': precision_score(y_test, xgb_pred, zero_division=0),
                 'recall': recall_score(y_test, xgb_pred, zero_division=0),
@@ -488,6 +514,10 @@ class OptimizedEMACrossoverTrainer:
                 'roc_auc': roc_auc_score(y_test, xgb_proba)
             },
             'lightgbm': {
+                'train_accuracy': accuracy_score(y_train_opt, lgb_train_pred),
+                'train_f1': f1_score(y_train_opt, lgb_train_pred, zero_division=0),
+                'test_accuracy': accuracy_score(y_test, lgb_pred),
+                'test_f1': f1_score(y_test, lgb_pred, zero_division=0),
                 'accuracy': accuracy_score(y_test, lgb_pred),
                 'precision': precision_score(y_test, lgb_pred, zero_division=0),
                 'recall': recall_score(y_test, lgb_pred, zero_division=0),
@@ -495,6 +525,10 @@ class OptimizedEMACrossoverTrainer:
                 'roc_auc': roc_auc_score(y_test, lgb_proba)
             },
             'ensemble': {
+                'train_accuracy': accuracy_score(y_train_opt, ensemble_train_pred),
+                'train_f1': f1_score(y_train_opt, ensemble_train_pred, zero_division=0),
+                'test_accuracy': accuracy_score(y_test, ensemble_pred),
+                'test_f1': f1_score(y_test, ensemble_pred, zero_division=0),
                 'accuracy': accuracy_score(y_test, ensemble_pred),
                 'precision': precision_score(y_test, ensemble_pred, zero_division=0),
                 'recall': recall_score(y_test, ensemble_pred, zero_division=0),
@@ -503,11 +537,32 @@ class OptimizedEMACrossoverTrainer:
             }
         }
         
-        # Print metrics
+        # Print metrics with overfitting detection
+        print("\n   ⚠️  OVERFITTING CHECK (Train vs Test):")
+        print("   " + "="*60)
+        
         for model_name, model_metrics in metrics.items():
             print(f"\n   {model_name.upper()}:")
+            print(f"      {'Train Accuracy':<20s}: {model_metrics['train_accuracy']:.4f}")
+            print(f"      {'Test Accuracy':<20s}: {model_metrics['test_accuracy']:.4f}")
+            print(f"      {'Train F1':<20s}: {model_metrics['train_f1']:.4f}")
+            print(f"      {'Test F1':<20s}: {model_metrics['test_f1']:.4f}")
+            
+            # Overfitting detection
+            acc_gap = model_metrics['train_accuracy'] - model_metrics['test_accuracy']
+            f1_gap = model_metrics['train_f1'] - model_metrics['test_f1']
+            
+            if acc_gap > 0.10 or f1_gap > 0.10:
+                print(f"      🚨 OVERFITTING DETECTED! Train-Test gap: Acc={acc_gap:.4f}, F1={f1_gap:.4f}")
+            elif acc_gap > 0.05 or f1_gap > 0.05:
+                print(f"      ⚠️  Possible overfitting. Train-Test gap: Acc={acc_gap:.4f}, F1={f1_gap:.4f}")
+            else:
+                print(f"      ✅ Good generalization. Train-Test gap: Acc={acc_gap:.4f}, F1={f1_gap:.4f}")
+            
+            print(f"\n      Full Test Metrics:")
             for metric_name, value in model_metrics.items():
-                print(f"      {metric_name:10s}: {value:.4f}")
+                if metric_name not in ['train_accuracy', 'train_f1', 'test_accuracy', 'test_f1']:
+                    print(f"         {metric_name:12s}: {value:.4f}")
         
         # Store models
         self.best_models = {
