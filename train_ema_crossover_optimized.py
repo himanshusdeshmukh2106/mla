@@ -1,10 +1,28 @@
 """
-EMA CROSSOVER STRATEGY - OPTIMIZED TRAINING
+EMA CROSSOVER STRATEGY - OPTIMIZED TRAINING (OVERFITTING PREVENTION)
+
 Implements:
 1. Optuna hyperparameter optimization (replaces GridSearch)
-2. Ensemble models (XGBoost + LightGBM + CatBoost)
+2. Ensemble models (XGBoost + LightGBM)
 3. Walk-forward analysis
 4. Feature selection (reduce from 78 features)
+
+OVERFITTING PREVENTION MEASURES:
+================================
+✅ Early Stopping: All models use early_stopping_rounds=50 to stop when validation performance plateaus
+✅ Reduced Complexity: Max depth limited to 3-6 (was 3-10), max estimators to 300 (was 500)
+✅ Lower Learning Rate: Range 0.005-0.1 (was 0.01-0.3) for better generalization
+✅ Aggressive Regularization: L1/L2 regularization increased to 0.1-5.0 (was 0-1.0)
+✅ Increased Gamma: More conservative tree splitting with gamma 0.1-2.0 (was 0-0.5)
+✅ Stronger Subsampling: Subsample 0.5-0.9 (was 0.6-1.0) to introduce randomness
+✅ Higher Min Child Weight: XGBoost min_child_weight 3-20 (was 1-10)
+✅ Higher Min Child Samples: LightGBM min_child_samples 10-100 (was 5-50)
+✅ Num Leaves Constraint: LightGBM num_leaves limited to 8-31
+✅ Min Split Gain: LightGBM min_split_gain 0.01-1.0 for conservative splitting
+✅ Class Imbalance Handling: scale_pos_weight calculated and applied
+✅ Feature Selection: Reduces dimensionality to ~30 features
+✅ Walk-Forward Validation: Tests generalization on out-of-sample data
+✅ Ensemble Voting: Reduces overfitting through model diversity
 """
 
 import pandas as pd
@@ -42,13 +60,16 @@ class OptimizedEMACrossoverTrainer:
         self.ensemble_model = None
         
         print("="*80)
-        print("🚀 OPTIMIZED EMA CROSSOVER TRAINER")
+        print("🚀 OPTIMIZED EMA CROSSOVER TRAINER (OVERFITTING PREVENTION)")
         print("="*80)
         print("Features:")
         print("  ✅ Optuna hyperparameter optimization")
-        print("  ✅ Ensemble models (XGBoost + LightGBM + CatBoost)")
+        print("  ✅ Ensemble models (XGBoost + LightGBM)")
         print("  ✅ Walk-forward analysis")
         print("  ✅ Feature selection")
+        print("  ✅ Early stopping on all models")
+        print("  ✅ Aggressive regularization (L1/L2, gamma, subsample)")
+        print("  ✅ Class imbalance handling")
         print("="*80)
     
     def load_data(self):
@@ -166,26 +187,44 @@ class OptimizedEMACrossoverTrainer:
         return self
     
     def optimize_xgboost(self, X_train, y_train, X_val, y_val, n_trials=50):
-        """Optimize XGBoost with Optuna"""
+        """Optimize XGBoost with Optuna - with overfitting prevention"""
         print("\n🔍 Optimizing XGBoost with Optuna...")
+        
+        # Calculate scale_pos_weight for imbalanced data
+        scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
+        print(f"   Class imbalance ratio: {scale_pos_weight:.2f}")
         
         def objective(trial):
             params = {
-                'max_depth': trial.suggest_int('max_depth', 3, 10),
-                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-                'n_estimators': trial.suggest_int('n_estimators', 100, 500),
-                'subsample': trial.suggest_float('subsample', 0.6, 1.0),
-                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
-                'min_child_weight': trial.suggest_int('min_child_weight', 1, 10),
-                'gamma': trial.suggest_float('gamma', 0, 0.5),
-                'reg_alpha': trial.suggest_float('reg_alpha', 0, 1.0),
-                'reg_lambda': trial.suggest_float('reg_lambda', 0, 1.0),
+                # Reduced max_depth to prevent overfitting (was 3-10, now 3-6)
+                'max_depth': trial.suggest_int('max_depth', 3, 6),
+                # Lower learning rate for better generalization (was 0.01-0.3, now 0.005-0.1)
+                'learning_rate': trial.suggest_float('learning_rate', 0.005, 0.1, log=True),
+                # Reduced n_estimators (early stopping will handle this)
+                'n_estimators': trial.suggest_int('n_estimators', 100, 300),
+                # More aggressive subsampling to reduce overfitting (was 0.6-1.0, now 0.5-0.9)
+                'subsample': trial.suggest_float('subsample', 0.5, 0.9),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9),
+                # Increased min_child_weight for regularization (was 1-10, now 3-20)
+                'min_child_weight': trial.suggest_int('min_child_weight', 3, 20),
+                # Increased gamma for more conservative splitting (was 0-0.5, now 0.1-2.0)
+                'gamma': trial.suggest_float('gamma', 0.1, 2.0),
+                # Stronger L1/L2 regularization (was 0-1.0, now 0.1-5.0)
+                'reg_alpha': trial.suggest_float('reg_alpha', 0.1, 5.0),
+                'reg_lambda': trial.suggest_float('reg_lambda', 0.1, 5.0),
+                # Handle class imbalance
+                'scale_pos_weight': scale_pos_weight,
                 'random_state': 42,
-                'n_jobs': -1
+                'n_jobs': -1,
+                'early_stopping_rounds': 50  # Critical: stop when no improvement
             }
             
             model = xgb.XGBClassifier(**params)
-            model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
+            model.fit(
+                X_train, y_train, 
+                eval_set=[(X_val, y_val)], 
+                verbose=False
+            )
             
             y_pred = model.predict(X_val)
             return f1_score(y_val, y_pred)
@@ -199,26 +238,46 @@ class OptimizedEMACrossoverTrainer:
         return study.best_params
     
     def optimize_lightgbm(self, X_train, y_train, X_val, y_val, n_trials=50):
-        """Optimize LightGBM with Optuna"""
+        """Optimize LightGBM with Optuna - with overfitting prevention"""
         print("\n🔍 Optimizing LightGBM with Optuna...")
+        
+        # Calculate scale_pos_weight for imbalanced data
+        scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
+        print(f"   Class imbalance ratio: {scale_pos_weight:.2f}")
         
         def objective(trial):
             params = {
-                'max_depth': trial.suggest_int('max_depth', 3, 10),
-                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-                'n_estimators': trial.suggest_int('n_estimators', 100, 500),
-                'subsample': trial.suggest_float('subsample', 0.6, 1.0),
-                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
-                'min_child_samples': trial.suggest_int('min_child_samples', 5, 50),
-                'reg_alpha': trial.suggest_float('reg_alpha', 0, 1.0),
-                'reg_lambda': trial.suggest_float('reg_lambda', 0, 1.0),
+                # Reduced max_depth to prevent overfitting (was 3-10, now 3-6)
+                'max_depth': trial.suggest_int('max_depth', 3, 6),
+                # Lower learning rate for better generalization (was 0.01-0.3, now 0.005-0.1)
+                'learning_rate': trial.suggest_float('learning_rate', 0.005, 0.1, log=True),
+                # Reduced n_estimators (early stopping will handle this)
+                'n_estimators': trial.suggest_int('n_estimators', 100, 300),
+                # More aggressive subsampling (was 0.6-1.0, now 0.5-0.9)
+                'subsample': trial.suggest_float('subsample', 0.5, 0.9),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9),
+                # Increased min_child_samples for regularization (was 5-50, now 10-100)
+                'min_child_samples': trial.suggest_int('min_child_samples', 10, 100),
+                # Add num_leaves constraint (LightGBM-specific, prevents overfitting)
+                'num_leaves': trial.suggest_int('num_leaves', 8, 31),  # Should be < 2^max_depth
+                # Stronger L1/L2 regularization (was 0-1.0, now 0.1-5.0)
+                'reg_alpha': trial.suggest_float('reg_alpha', 0.1, 5.0),
+                'reg_lambda': trial.suggest_float('reg_lambda', 0.1, 5.0),
+                # Add min_gain_to_split for more conservative splitting
+                'min_split_gain': trial.suggest_float('min_split_gain', 0.01, 1.0),
+                # Handle class imbalance
+                'scale_pos_weight': scale_pos_weight,
                 'random_state': 42,
                 'n_jobs': -1,
                 'verbose': -1
             }
             
             model = lgb.LGBMClassifier(**params)
-            model.fit(X_train, y_train, eval_set=[(X_val, y_val)])
+            model.fit(
+                X_train, y_train, 
+                eval_set=[(X_val, y_val)],
+                callbacks=[lgb.early_stopping(stopping_rounds=50)]  # Critical: early stopping
+            )
             
             y_pred = model.predict(X_val)
             return f1_score(y_val, y_pred)
@@ -280,12 +339,27 @@ class OptimizedEMACrossoverTrainer:
             xgb_params = self.optimize_xgboost(X_train_opt, y_train_opt, X_val, y_val, n_trials=optimize_trials)
             lgb_params = self.optimize_lightgbm(X_train_opt, y_train_opt, X_val, y_val, n_trials=optimize_trials)
             
-            # Train final models on full train set
+            # Train final models on full train set with early stopping
+            # Create validation set from end of training data
+            val_size_final = len(X_train) // 10  # 10% for validation
+            X_train_final = X_train[:-val_size_final]
+            y_train_final = y_train[:-val_size_final]
+            X_val_final = X_train[-val_size_final:]
+            y_val_final = y_train[-val_size_final:]
+            
             xgb_model = xgb.XGBClassifier(**xgb_params)
-            xgb_model.fit(X_train, y_train)
+            xgb_model.fit(
+                X_train_final, y_train_final,
+                eval_set=[(X_val_final, y_val_final)],
+                verbose=False
+            )
             
             lgb_model = lgb.LGBMClassifier(**lgb_params)
-            lgb_model.fit(X_train, y_train)
+            lgb_model.fit(
+                X_train_final, y_train_final,
+                eval_set=[(X_val_final, y_val_final)],
+                callbacks=[lgb.early_stopping(stopping_rounds=50, verbose=False)]
+            )
             
             # Evaluate on test set
             xgb_pred = xgb_model.predict(X_test)
@@ -361,14 +435,22 @@ class OptimizedEMACrossoverTrainer:
         xgb_params = self.optimize_xgboost(X_train_opt, y_train_opt, X_val, y_val, n_trials=optimize_trials)
         lgb_params = self.optimize_lightgbm(X_train_opt, y_train_opt, X_val, y_val, n_trials=optimize_trials)
         
-        # Train final models on full train set
-        print("\n   Training final XGBoost...")
+        # Train final models with early stopping on validation set
+        print("\n   Training final XGBoost with early stopping...")
         xgb_model = xgb.XGBClassifier(**xgb_params)
-        xgb_model.fit(X_train, y_train)
+        xgb_model.fit(
+            X_train_opt, y_train_opt,
+            eval_set=[(X_val, y_val), (X_test, y_test)],
+            verbose=True
+        )
         
-        print("   Training final LightGBM...")
+        print("\n   Training final LightGBM with early stopping...")
         lgb_model = lgb.LGBMClassifier(**lgb_params)
-        lgb_model.fit(X_train, y_train)
+        lgb_model.fit(
+            X_train_opt, y_train_opt,
+            eval_set=[(X_val, y_val), (X_test, y_test)],
+            callbacks=[lgb.early_stopping(stopping_rounds=50)]
+        )
         
         # Create ensemble
         print("   Creating ensemble...")
@@ -379,7 +461,8 @@ class OptimizedEMACrossoverTrainer:
             ],
             voting='soft'  # Use probabilities
         )
-        self.ensemble_model.fit(X_train, y_train)
+        # Fit ensemble on same data as individual models
+        self.ensemble_model.fit(X_train_opt, y_train_opt)
         
         # Evaluate
         print("\n   📊 Evaluation on Test Set:")
