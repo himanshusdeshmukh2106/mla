@@ -11,9 +11,24 @@
 
 **Fix:**
 - Moved `early_stopping_rounds` from constructor to `fit()` method
-- Added XGBoost API version detection for compatibility
-- Used `callbacks=[XGBEarlyStopping(rounds=50)]` for new XGBoost versions
-- Used `early_stopping_rounds=50` parameter for old versions
+- Added robust XGBoost version detection based on `__version__` string
+- For XGBoost >= 1.6.0: Uses `callbacks=[EarlyStopping(rounds=50, save_best=True)]`
+- For XGBoost < 1.6.0: Uses `early_stopping_rounds=50` parameter
+- Added error handling for version parsing
+
+**Code:**
+```python
+# Version detection
+xgb_version = tuple(map(int, xgboost.__version__.split('.')[:2]))
+XGBOOST_NEW_API = xgb_version >= (1, 6)
+
+# In fit() calls
+if XGBOOST_NEW_API:
+    from xgboost.callback import EarlyStopping as XGBEarlyStopping
+    model.fit(..., callbacks=[XGBEarlyStopping(rounds=50, save_best=True)])
+else:
+    model.fit(..., early_stopping_rounds=50)
+```
 
 **Impact:** ✅ Models now stop early when validation performance plateaus
 

@@ -43,11 +43,17 @@ from datetime import datetime
 import os
 
 # XGBoost version check for early stopping API
+import xgboost
 try:
-    from xgboost.callback import EarlyStopping as XGBEarlyStopping
-    XGBOOST_NEW_API = True
-except ImportError:
+    xgb_version = tuple(map(int, xgboost.__version__.split('.')[:2]))
+    # XGBoost >= 1.6.0 uses callbacks, older versions use early_stopping_rounds parameter
+    XGBOOST_NEW_API = xgb_version >= (1, 6)
+except:
+    # If version parsing fails, default to old API (safer)
     XGBOOST_NEW_API = False
+
+print(f"Detected XGBoost version: {xgboost.__version__}")
+print(f"Using new API (callbacks): {XGBOOST_NEW_API}")
 
 
 class OptimizedEMACrossoverTrainer:
@@ -229,6 +235,7 @@ class OptimizedEMACrossoverTrainer:
             
             # Handle early stopping based on XGBoost version
             if XGBOOST_NEW_API:
+                from xgboost.callback import EarlyStopping as XGBEarlyStopping
                 model.fit(
                     X_train, y_train, 
                     eval_set=[(X_val, y_val)],
@@ -382,6 +389,7 @@ class OptimizedEMACrossoverTrainer:
             
             # Handle early stopping based on XGBoost version
             if XGBOOST_NEW_API:
+                from xgboost.callback import EarlyStopping as XGBEarlyStopping
                 xgb_model.fit(
                     X_train_final, y_train_final,
                     eval_set=[(X_val_final, y_val_final)],
@@ -483,6 +491,7 @@ class OptimizedEMACrossoverTrainer:
         
         # Handle early stopping based on XGBoost version
         if XGBOOST_NEW_API:
+            from xgboost.callback import EarlyStopping as XGBEarlyStopping
             xgb_model.fit(
                 X_train_opt, y_train_opt,
                 eval_set=[(X_val, y_val), (X_test, y_test)],
