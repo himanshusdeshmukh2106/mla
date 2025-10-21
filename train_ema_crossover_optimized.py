@@ -42,6 +42,13 @@ import json
 from datetime import datetime
 import os
 
+# XGBoost version check for early stopping API
+try:
+    from xgboost.callback import EarlyStopping as XGBEarlyStopping
+    XGBOOST_NEW_API = True
+except ImportError:
+    XGBOOST_NEW_API = False
+
 
 class OptimizedEMACrossoverTrainer:
     """
@@ -219,12 +226,22 @@ class OptimizedEMACrossoverTrainer:
             }
             
             model = xgb.XGBClassifier(**params)
-            model.fit(
-                X_train, y_train, 
-                eval_set=[(X_val, y_val)],
-                early_stopping_rounds=50,
-                verbose=False
-            )
+            
+            # Handle early stopping based on XGBoost version
+            if XGBOOST_NEW_API:
+                model.fit(
+                    X_train, y_train, 
+                    eval_set=[(X_val, y_val)],
+                    callbacks=[XGBEarlyStopping(rounds=50, save_best=True)],
+                    verbose=False
+                )
+            else:
+                model.fit(
+                    X_train, y_train, 
+                    eval_set=[(X_val, y_val)],
+                    early_stopping_rounds=50,
+                    verbose=False
+                )
             
             y_pred = model.predict(X_val)
             y_train_pred = model.predict(X_train)
@@ -362,12 +379,22 @@ class OptimizedEMACrossoverTrainer:
             y_val_final = y_train[-val_size_final:]
             
             xgb_model = xgb.XGBClassifier(**xgb_params)
-            xgb_model.fit(
-                X_train_final, y_train_final,
-                eval_set=[(X_val_final, y_val_final)],
-                early_stopping_rounds=50,
-                verbose=False
-            )
+            
+            # Handle early stopping based on XGBoost version
+            if XGBOOST_NEW_API:
+                xgb_model.fit(
+                    X_train_final, y_train_final,
+                    eval_set=[(X_val_final, y_val_final)],
+                    callbacks=[XGBEarlyStopping(rounds=50, save_best=True)],
+                    verbose=False
+                )
+            else:
+                xgb_model.fit(
+                    X_train_final, y_train_final,
+                    eval_set=[(X_val_final, y_val_final)],
+                    early_stopping_rounds=50,
+                    verbose=False
+                )
             
             lgb_model = lgb.LGBMClassifier(**lgb_params)
             lgb_model.fit(
@@ -453,12 +480,22 @@ class OptimizedEMACrossoverTrainer:
         # Train final models with early stopping on validation set
         print("\n   Training final XGBoost with early stopping...")
         xgb_model = xgb.XGBClassifier(**xgb_params)
-        xgb_model.fit(
-            X_train_opt, y_train_opt,
-            eval_set=[(X_val, y_val), (X_test, y_test)],
-            early_stopping_rounds=50,
-            verbose=True
-        )
+        
+        # Handle early stopping based on XGBoost version
+        if XGBOOST_NEW_API:
+            xgb_model.fit(
+                X_train_opt, y_train_opt,
+                eval_set=[(X_val, y_val), (X_test, y_test)],
+                callbacks=[XGBEarlyStopping(rounds=50, save_best=True)],
+                verbose=True
+            )
+        else:
+            xgb_model.fit(
+                X_train_opt, y_train_opt,
+                eval_set=[(X_val, y_val), (X_test, y_test)],
+                early_stopping_rounds=50,
+                verbose=True
+            )
         
         print("\n   Training final LightGBM with early stopping...")
         lgb_model = lgb.LGBMClassifier(**lgb_params)
